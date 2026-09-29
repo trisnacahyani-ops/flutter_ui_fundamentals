@@ -22,7 +22,7 @@ class MyApp extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // Foto profil dari assets
+              // Foto profil
               const CircleAvatar(
                 radius: 46,
                 backgroundImage: AssetImage('assets/image/trisna.jpeg'),
@@ -30,7 +30,7 @@ class MyApp extends StatelessWidget {
 
               const SizedBox(height: 12),
 
-              // Nama mahasiswa
+              // Nama
               const Text(
                 studentName,
                 style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
@@ -41,7 +41,7 @@ class MyApp extends StatelessWidget {
 
               const SizedBox(height: 8),
 
-              // Skill/aktivitas
+              // Skill
               const Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -53,11 +53,56 @@ class MyApp extends StatelessWidget {
 
               const SizedBox(height: 12),
 
-              // Deskripsi minat
+              // Deskripsi
               const Text(
                 'Saya tertarik mempelajari pemrograman mobile '
                 'dan membuat aplikasi yang bermanfaat.',
                 textAlign: TextAlign.center,
+              ),
+
+              const SizedBox(height: 24),
+
+              // Statistik
+              const Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  Column(
+                    children: [
+                      Text(
+                        '8',
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text('Widget'),
+                    ],
+                  ),
+                  Column(
+                    children: [
+                      Text(
+                        '4',
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text('Layout'),
+                    ],
+                  ),
+                  Column(
+                    children: [
+                      Text(
+                        '1',
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text('State'),
+                    ],
+                  ),
+                ],
               ),
             ],
           ),
