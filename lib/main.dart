@@ -3,6 +3,28 @@ import 'package:flutter/material.dart';
 const String studentName = 'Ni Komang Trisna Cahyani';
 const String studentId = '2415051072';
 
+// Function widget yang dapat digunakan ulang
+Widget buildStatCard(String value, String label, IconData icon) {
+  return Expanded(
+    child: Card(
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          children: [
+            Icon(icon),
+            const SizedBox(height: 6),
+            Text(
+              value,
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            Text(label),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
 void main() {
   runApp(const MyApp());
 }
@@ -24,17 +46,14 @@ class MyApp extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: Column(
-                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Foto profil
                     const CircleAvatar(
                       radius: 46,
                       backgroundImage: AssetImage('assets/image/trisna.jpeg'),
                     ),
-
                     const SizedBox(height: 12),
 
-                    // Nama
+                    // Identitas mahasiswa
                     const Text(
                       studentName,
                       style: TextStyle(
@@ -42,13 +61,10 @@ class MyApp extends StatelessWidget {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-
-                    // NIM
                     const Text(studentId, style: TextStyle(fontSize: 18)),
 
                     const SizedBox(height: 8),
 
-                    // Skill
                     const Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -60,7 +76,6 @@ class MyApp extends StatelessWidget {
 
                     const SizedBox(height: 12),
 
-                    // Deskripsi
                     const Text(
                       'Saya tertarik mempelajari pemrograman mobile '
                       'dan membuat aplikasi yang bermanfaat.',
@@ -69,74 +84,27 @@ class MyApp extends StatelessWidget {
 
                     const SizedBox(height: 20),
 
-                    // Ringkasan statistik
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.deepPurple),
+                    // Statistik menggunakan function yang dapat digunakan ulang
+                    const Text(
+                      'Ringkasan Pembelajaran',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
                       ),
-                      child: const Column(
-                        children: [
-                          Text(
-                            'Ringkasan Pembelajaran',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
+                    ),
 
-                          SizedBox(height: 12),
+                    const SizedBox(height: 12),
 
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
-                              Column(
-                                children: [
-                                  Text(
-                                    '8',
-                                    style: TextStyle(
-                                      fontSize: 22,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  Text('Widget'),
-                                ],
-                              ),
-                              Column(
-                                children: [
-                                  Text(
-                                    '4',
-                                    style: TextStyle(
-                                      fontSize: 22,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  Text('Layout'),
-                                ],
-                              ),
-                              Column(
-                                children: [
-                                  Text(
-                                    '1',
-                                    style: TextStyle(
-                                      fontSize: 22,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  Text('State'),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
+                    Row(
+                      children: [
+                        buildStatCard('8', 'Widget', Icons.widgets),
+                        buildStatCard('4', 'Layout', Icons.view_quilt),
+                        buildStatCard('1', 'State', Icons.sync),
+                      ],
                     ),
 
                     const SizedBox(height: 16),
 
-                    // Ringkasan tahap
                     Container(
                       width: double.infinity,
                       padding: const EdgeInsets.all(12),
@@ -145,7 +113,7 @@ class MyApp extends StatelessWidget {
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: const Text(
-                        'Tahap 7: Spacing, Container, Card, dan Styling',
+                        'Tahap 8: Widget yang Dapat Digunakan Ulang',
                         textAlign: TextAlign.center,
                         style: TextStyle(fontWeight: FontWeight.bold),
                       ),
