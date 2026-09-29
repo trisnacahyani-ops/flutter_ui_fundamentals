@@ -7,7 +7,9 @@ void main() {
   runApp(const MyApp());
 }
 
-// Membaca data dari file JSON
+// =========================
+// LOAD DATA JSON
+// =========================
 Future<Map<String, dynamic>> loadStudentData() async {
   final jsonString = await rootBundle.loadString(
     'assets/data/student_data.json',
@@ -16,6 +18,9 @@ Future<Map<String, dynamic>> loadStudentData() async {
   return jsonDecode(jsonString) as Map<String, dynamic>;
 }
 
+// =========================
+// MY APP
+// =========================
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -33,7 +38,9 @@ class MyApp extends StatelessWidget {
   }
 }
 
-// Dashboard utama
+// =========================
+// DASHBOARD PAGE
+// =========================
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
 
@@ -58,28 +65,52 @@ class _DashboardPageState extends State<DashboardPage> {
         title: const Text('Learning Dashboard'),
         centerTitle: true,
       ),
+
       body: FutureBuilder<Map<String, dynamic>>(
         future: studentFuture,
+
         builder: (context, snapshot) {
-          // Loading state
+          // =========================
+          // LOADING STATE
+          // =========================
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
 
-          // Error state
+          // =========================
+          // ERROR STATE
+          // =========================
           if (snapshot.hasError) {
             return Center(
               child: Padding(
                 padding: const EdgeInsets.all(20),
-                child: Text(
-                  'Gagal memuat data:\n${snapshot.error}',
-                  textAlign: TextAlign.center,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.error_outline, size: 60),
+
+                    const SizedBox(height: 12),
+
+                    const Text(
+                      'Gagal memuat data',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+
+                    const SizedBox(height: 8),
+
+                    Text('${snapshot.error}', textAlign: TextAlign.center),
+                  ],
                 ),
               ),
             );
           }
 
-          // Data tidak tersedia
+          // =========================
+          // DATA TIDAK ADA
+          // =========================
           if (!snapshot.hasData) {
             return const Center(child: Text('Data tidak tersedia'));
           }
@@ -97,18 +128,22 @@ class _DashboardPageState extends State<DashboardPage> {
             (sum, item) => sum + (item['credits'] as int),
           );
 
+          // =========================
+          // DASHBOARD
+          // =========================
           return SafeArea(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(16),
+
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
+
                 children: [
-                  // Profile Card
+                  // PROFILE
                   buildProfileCard(student: student),
 
                   const SizedBox(height: 16),
 
-                  // Judul summary
                   const Text(
                     'Ringkasan Pembelajaran',
                     style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
@@ -116,7 +151,7 @@ class _DashboardPageState extends State<DashboardPage> {
 
                   const SizedBox(height: 10),
 
-                  // Summary Cards
+                  // SUMMARY
                   Row(
                     children: [
                       Expanded(
@@ -126,7 +161,9 @@ class _DashboardPageState extends State<DashboardPage> {
                           label: 'Mata Kuliah',
                         ),
                       ),
+
                       const SizedBox(width: 12),
+
                       Expanded(
                         child: buildSummaryCard(
                           icon: Icons.school,
@@ -139,7 +176,6 @@ class _DashboardPageState extends State<DashboardPage> {
 
                   const SizedBox(height: 20),
 
-                  // Judul courses
                   const Text(
                     'Daftar Pembelajaran',
                     style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
@@ -147,10 +183,25 @@ class _DashboardPageState extends State<DashboardPage> {
 
                   const SizedBox(height: 10),
 
-                  // List courses
+                  // COURSE LIST
                   ...courses.map(
                     (item) => buildCourseCard(item as Map<String, dynamic>),
                   ),
+
+                  const SizedBox(height: 20),
+
+                  // =========================
+                  // CASE A
+                  // RENDERFLEX OVERFLOW
+                  // =========================
+                  buildOverflowDebug(),
+
+                  const SizedBox(height: 12),
+
+                  // =========================
+                  // INFO DEBUGGING
+                  // =========================
+                  buildDebugInfo(student: student),
                 ],
               ),
             ),
@@ -161,14 +212,20 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 }
 
-// Reusable widget untuk profile
+// =========================
+// PROFILE CARD
+// =========================
 Widget buildProfileCard({required Map<String, dynamic> student}) {
   return Card(
     elevation: 3,
+
     child: Padding(
       padding: const EdgeInsets.all(16),
+
       child: Row(
         children: [
+          // CASE B
+          // ASSET PATH HARUS BENAR
           const CircleAvatar(
             radius: 42,
             backgroundImage: AssetImage('assets/image/trisna.jpeg'),
@@ -179,13 +236,17 @@ Widget buildProfileCard({required Map<String, dynamic> student}) {
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+
               children: [
                 Text(
                   student['name'] as String,
+
                   style: const TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
                   ),
+
+                  softWrap: true,
                 ),
 
                 const SizedBox(height: 6),
@@ -193,13 +254,6 @@ Widget buildProfileCard({required Map<String, dynamic> student}) {
                 Text(
                   'NIM: ${student['nim']}',
                   style: const TextStyle(fontSize: 16),
-                ),
-
-                const SizedBox(height: 4),
-
-                Text(
-                  'Semester: ${student['semester']}',
-                  style: const TextStyle(fontSize: 15),
                 ),
               ],
             ),
@@ -210,7 +264,9 @@ Widget buildProfileCard({required Map<String, dynamic> student}) {
   );
 }
 
-// Reusable widget untuk summary
+// =========================
+// SUMMARY CARD
+// =========================
 Widget buildSummaryCard({
   required IconData icon,
   required String value,
@@ -218,8 +274,10 @@ Widget buildSummaryCard({
 }) {
   return Card(
     elevation: 2,
+
     child: Padding(
       padding: const EdgeInsets.all(16),
+
       child: Column(
         children: [
           Icon(icon, size: 32),
@@ -240,11 +298,14 @@ Widget buildSummaryCard({
   );
 }
 
-// Reusable widget untuk course
+// =========================
+// COURSE CARD
+// =========================
 Widget buildCourseCard(Map<String, dynamic> course) {
   final String status = course['status'] as String;
 
   final bool isDone = status == 'done';
+
   final bool isActive = status == 'active';
 
   IconData icon;
@@ -269,19 +330,110 @@ Widget buildCourseCard(Map<String, dynamic> course) {
 
   return Card(
     margin: const EdgeInsets.only(bottom: 10),
+
     child: ListTile(
       leading: Icon(icon, size: 32),
 
       title: Text(
         course['title'] as String,
+
         style: const TextStyle(fontWeight: FontWeight.bold),
       ),
 
-      subtitle: Text('${course['code']} • ${course['credits']} SKS'),
+      subtitle: Text(
+        '${course['code']} • '
+        '${course['credits']} SKS',
+      ),
 
       trailing: Text(
         statusText,
+
         style: const TextStyle(fontWeight: FontWeight.bold),
+      ),
+    ),
+  );
+}
+
+// =========================
+// CASE A
+// RENDERFLEX OVERFLOW
+// =========================
+Widget buildOverflowDebug() {
+  return Card(
+    elevation: 2,
+
+    child: Padding(
+      padding: const EdgeInsets.all(16),
+
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+
+        children: [
+          const Icon(Icons.info_outline, size: 28),
+
+          const SizedBox(width: 10),
+
+          // FIX:
+          // Expanded membuat Text
+          // menggunakan ruang yang tersedia.
+          Expanded(
+            child: Text(
+              '2415051072 - '
+              'Ni Komang Trisna Cahyani - '
+              'Ini adalah teks yang sangat panjang '
+              'untuk menguji layout Flutter agar '
+              'tidak mengalami RenderFlex Overflow.',
+
+              softWrap: true,
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+// =========================
+// DEBUG INFORMATION
+// =========================
+Widget buildDebugInfo({required Map<String, dynamic> student}) {
+  return Card(
+    child: Padding(
+      padding: const EdgeInsets.all(16),
+
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+
+        children: [
+          const Text(
+            'Hasil Debugging',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+
+          const SizedBox(height: 10),
+
+          Text('NIM: ${student['nim']}'),
+
+          Text('Nama: ${student['name']}'),
+
+          const SizedBox(height: 8),
+
+          const Text(
+            'RenderFlex Overflow: '
+            'diperbaiki menggunakan Expanded.',
+          ),
+
+          const Text(
+            'Asset: menggunakan path '
+            'assets/image/trisna.jpeg.',
+          ),
+
+          const Text(
+            'JSON: menggunakan '
+            'assets/data/student_data.json '
+            'dan FutureBuilder.',
+          ),
+        ],
       ),
     ),
   );
