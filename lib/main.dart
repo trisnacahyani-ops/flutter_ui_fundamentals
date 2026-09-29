@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 const String studentName = 'Ni Komang Trisna Cahyani';
-const String studentId = '2415051072';
+const String studentId = 'NIM_ANDA';
 
 void main() {
   runApp(const MyApp());
@@ -22,18 +22,29 @@ class MyApp extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Text('$studentId - $studentName', textAlign: TextAlign.center),
+              Text(
+                '$studentId - $studentName',
+                textAlign: TextAlign.center,
+                style: const TextStyle(fontSize: 18),
+              ),
 
               const SizedBox(height: 12),
 
               const Text(
-                'Belajar Widget Tree',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                'Tahap 4 - Belajar Widget Tree',
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
               ),
 
               const SizedBox(height: 12),
 
               const Icon(Icons.widgets, size: 48),
+
+              const SizedBox(height: 12),
+
+              const Text(
+                'Memahami hubungan parent dan child pada Flutter',
+                textAlign: TextAlign.center,
+              ),
             ],
           ),
         ),
