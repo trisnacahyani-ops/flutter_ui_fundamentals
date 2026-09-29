@@ -7,6 +7,15 @@ void main() {
   runApp(const MyApp());
 }
 
+// Membaca data dari file JSON
+Future<Map<String, dynamic>> loadStudentData() async {
+  final jsonString = await rootBundle.loadString(
+    'assets/data/student_data.json',
+  );
+
+  return jsonDecode(jsonString) as Map<String, dynamic>;
+}
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -14,162 +23,266 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: const StudentPage(),
+      title: 'Learning Dashboard',
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        useMaterial3: true,
+      ),
+      home: const DashboardPage(),
     );
   }
 }
 
-class StudentPage extends StatefulWidget {
-  const StudentPage({super.key});
+// Dashboard utama
+class DashboardPage extends StatefulWidget {
+  const DashboardPage({super.key});
 
   @override
-  State<StudentPage> createState() => _StudentPageState();
+  State<DashboardPage> createState() => _DashboardPageState();
 }
 
-class _StudentPageState extends State<StudentPage> {
-  Map<String, dynamic>? studentData;
-  bool isLoading = true;
+class _DashboardPageState extends State<DashboardPage> {
+  late Future<Map<String, dynamic>> studentFuture;
 
   @override
   void initState() {
     super.initState();
-    loadStudentData();
-  }
 
-  Future<void> loadStudentData() async {
-    final jsonString = await rootBundle.loadString(
-      'assets/data/student_data.json',
-    );
-
-    final data = jsonDecode(jsonString) as Map<String, dynamic>;
-
-    setState(() {
-      studentData = data;
-      isLoading = false;
-    });
+    studentFuture = loadStudentData();
   }
 
   @override
   Widget build(BuildContext context) {
-    if (isLoading) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
-    }
-
-    final student = studentData!['student'] as Map<String, dynamic>;
-
-    final courses = studentData!['courses'] as List<dynamic>;
-
-    final int completed = courses
-        .where((item) => item['status'] == 'done')
-        .length;
-
     return Scaffold(
-      appBar: AppBar(title: const Text('Flutter UI Fundamentals')),
-      body: Column(
+      appBar: AppBar(
+        title: const Text('Learning Dashboard'),
+        centerTitle: true,
+      ),
+      body: FutureBuilder<Map<String, dynamic>>(
+        future: studentFuture,
+        builder: (context, snapshot) {
+          // Loading state
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          // Error state
+          if (snapshot.hasError) {
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Text(
+                  'Gagal memuat data:\n${snapshot.error}',
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            );
+          }
+
+          // Data tidak tersedia
+          if (!snapshot.hasData) {
+            return const Center(child: Text('Data tidak tersedia'));
+          }
+
+          final data = snapshot.data!;
+
+          final student = data['student'] as Map<String, dynamic>;
+
+          final courses = data['courses'] as List<dynamic>;
+
+          final int totalCourses = courses.length;
+
+          final int totalCredits = courses.fold(
+            0,
+            (sum, item) => sum + (item['credits'] as int),
+          );
+
+          return SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Profile Card
+                  buildProfileCard(student: student),
+
+                  const SizedBox(height: 16),
+
+                  // Judul summary
+                  const Text(
+                    'Ringkasan Pembelajaran',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+
+                  const SizedBox(height: 10),
+
+                  // Summary Cards
+                  Row(
+                    children: [
+                      Expanded(
+                        child: buildSummaryCard(
+                          icon: Icons.menu_book,
+                          value: '$totalCourses',
+                          label: 'Mata Kuliah',
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: buildSummaryCard(
+                          icon: Icons.school,
+                          value: '$totalCredits',
+                          label: 'Total SKS',
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  // Judul courses
+                  const Text(
+                    'Daftar Pembelajaran',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+
+                  const SizedBox(height: 10),
+
+                  // List courses
+                  ...courses.map(
+                    (item) => buildCourseCard(item as Map<String, dynamic>),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+// Reusable widget untuk profile
+Widget buildProfileCard({required Map<String, dynamic> student}) {
+  return Card(
+    elevation: 3,
+    child: Padding(
+      padding: const EdgeInsets.all(16),
+      child: Row(
         children: [
-          // Identitas mahasiswa
-          Padding(
-            padding: const EdgeInsets.all(12),
+          const CircleAvatar(
+            radius: 42,
+            backgroundImage: AssetImage('assets/image/trisna.jpeg'),
+          ),
+
+          const SizedBox(width: 16),
+
+          Expanded(
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   student['name'] as String,
                   style: const TextStyle(
-                    fontSize: 22,
+                    fontSize: 20,
                     fontWeight: FontWeight.bold,
                   ),
-                  textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  student['nim'] as String,
-                  style: const TextStyle(fontSize: 18),
-                ),
-                const SizedBox(height: 10),
 
-                // Ringkasan
+                const SizedBox(height: 6),
+
                 Text(
-                  '$completed dari ${courses.length} topik selesai',
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
+                  'NIM: ${student['nim']}',
+                  style: const TextStyle(fontSize: 16),
+                ),
+
+                const SizedBox(height: 4),
+
+                Text(
+                  'Semester: ${student['semester']}',
+                  style: const TextStyle(fontSize: 15),
                 ),
               ],
             ),
           ),
-
-          const Divider(),
-
-          // Daftar courses dari JSON
-          Expanded(
-            child: ListView.separated(
-              itemCount: courses.length,
-              separatorBuilder: (context, index) {
-                return const SizedBox(height: 2);
-              },
-              itemBuilder: (context, index) {
-                final item = courses[index] as Map<String, dynamic>;
-
-                final String status = item['status'] as String;
-
-                final bool isDone = status == 'done';
-
-                return Card(
-                  margin: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
-                  ),
-                  child: ListTile(
-                    leading: Icon(
-                      isDone
-                          ? Icons.check_circle
-                          : status == 'active'
-                          ? Icons.play_circle
-                          : Icons.schedule,
-                      color: isDone
-                          ? Colors.green
-                          : status == 'active'
-                          ? Colors.blue
-                          : Colors.orange,
-                    ),
-                    title: Text(
-                      item['title'] as String,
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    subtitle: Text('${item['code']} • ${item['credits']} SKS'),
-                    trailing: Text(
-                      isDone
-                          ? 'Selesai'
-                          : status == 'active'
-                          ? 'Aktif'
-                          : 'Belum',
-                      style: TextStyle(
-                        color: isDone
-                            ? Colors.green
-                            : status == 'active'
-                            ? Colors.blue
-                            : Colors.orange,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
-
-          // Keterangan tahap
-          const Padding(
-            padding: EdgeInsets.all(12),
-            child: Text(
-              'Tahap 12 - Membaca Data dari JSON',
-              textAlign: TextAlign.center,
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-          ),
         ],
       ),
-    );
+    ),
+  );
+}
+
+// Reusable widget untuk summary
+Widget buildSummaryCard({
+  required IconData icon,
+  required String value,
+  required String label,
+}) {
+  return Card(
+    elevation: 2,
+    child: Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        children: [
+          Icon(icon, size: 32),
+
+          const SizedBox(height: 8),
+
+          Text(
+            value,
+            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          ),
+
+          const SizedBox(height: 4),
+
+          Text(label, textAlign: TextAlign.center),
+        ],
+      ),
+    ),
+  );
+}
+
+// Reusable widget untuk course
+Widget buildCourseCard(Map<String, dynamic> course) {
+  final String status = course['status'] as String;
+
+  final bool isDone = status == 'done';
+  final bool isActive = status == 'active';
+
+  IconData icon;
+
+  if (isDone) {
+    icon = Icons.check_circle;
+  } else if (isActive) {
+    icon = Icons.play_circle;
+  } else {
+    icon = Icons.schedule;
   }
+
+  String statusText;
+
+  if (isDone) {
+    statusText = 'Selesai';
+  } else if (isActive) {
+    statusText = 'Aktif';
+  } else {
+    statusText = 'Belum';
+  }
+
+  return Card(
+    margin: const EdgeInsets.only(bottom: 10),
+    child: ListTile(
+      leading: Icon(icon, size: 32),
+
+      title: Text(
+        course['title'] as String,
+        style: const TextStyle(fontWeight: FontWeight.bold),
+      ),
+
+      subtitle: Text('${course['code']} • ${course['credits']} SKS'),
+
+      trailing: Text(
+        statusText,
+        style: const TextStyle(fontWeight: FontWeight.bold),
+      ),
+    ),
+  );
 }
