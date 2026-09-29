@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 const String studentName = 'Ni Komang Trisna Cahyani';
-const String studentId = 'NIM_ANDA';
+const String studentId = '2415051072';
 
 void main() {
   runApp(const MyApp());
