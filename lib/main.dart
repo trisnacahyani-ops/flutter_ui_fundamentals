@@ -27,7 +27,6 @@ class TopicList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Collection Dart
     final List<Map<String, dynamic>> topics = [
       {'title': 'Git & GitHub', 'subtitle': 'Version control', 'done': true},
       {
@@ -47,9 +46,11 @@ class TopicList extends StatelessWidget {
       },
     ];
 
+    // Menghitung jumlah topik yang sudah selesai
+    final int completed = topics.where((item) => item['done'] == true).length;
+
     return Column(
       children: [
-        // Identitas mahasiswa tetap di atas daftar
         Padding(
           padding: const EdgeInsets.all(12),
           child: Column(
@@ -60,27 +61,51 @@ class TopicList extends StatelessWidget {
               ),
               const SizedBox(height: 4),
               const Text(studentId, style: TextStyle(fontSize: 18)),
+              const SizedBox(height: 10),
+
+              // Ringkasan data collection
+              Text(
+                '$completed dari ${topics.length} topik selesai',
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ],
           ),
         ),
 
         const Divider(),
 
-        // ListView membutuhkan Expanded
+        // Menampilkan list dengan separator
         Expanded(
-          child: ListView.builder(
+          child: ListView.separated(
             itemCount: topics.length,
+            separatorBuilder: (context, index) => const SizedBox(height: 2),
             itemBuilder: (context, index) {
               final item = topics[index];
+              final bool isDone = item['done'] == true;
 
-              return ListTile(
-                leading: Icon(
-                  item['done'] == true
-                      ? Icons.check_circle
-                      : Icons.circle_outlined,
+              return Card(
+                margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                child: ListTile(
+                  leading: Icon(
+                    isDone ? Icons.check_circle : Icons.schedule,
+                    color: isDone ? Colors.green : Colors.orange,
+                  ),
+                  title: Text(
+                    item['title'] as String,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  subtitle: Text(item['subtitle'] as String),
+                  trailing: Text(
+                    isDone ? 'Selesai' : 'Belum',
+                    style: TextStyle(
+                      color: isDone ? Colors.green : Colors.orange,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
-                title: Text(item['title'] as String),
-                subtitle: Text(item['subtitle'] as String),
               );
             },
           ),
