@@ -22,27 +22,41 @@ class MyApp extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Text(
-                '$studentId - $studentName',
-                textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 18),
+              // Foto profil dari assets
+              const CircleAvatar(
+                radius: 46,
+                backgroundImage: AssetImage('assets/image/trisna.jpeg'),
               ),
 
               const SizedBox(height: 12),
 
+              // Nama mahasiswa
               const Text(
-                'Tahap 4 - Belajar Widget Tree',
+                studentName,
                 style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
               ),
 
+              // NIM
+              const Text(studentId, style: TextStyle(fontSize: 18)),
+
+              const SizedBox(height: 8),
+
+              // Skill/aktivitas
+              const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.phone_android, size: 24),
+                  SizedBox(width: 8),
+                  Text('Mobile Programming Student'),
+                ],
+              ),
+
               const SizedBox(height: 12),
 
-              const Icon(Icons.widgets, size: 48),
-
-              const SizedBox(height: 12),
-
+              // Deskripsi minat
               const Text(
-                'Memahami hubungan parent dan child pada Flutter',
+                'Saya tertarik mempelajari pemrograman mobile '
+                'dan membuat aplikasi yang bermanfaat.',
                 textAlign: TextAlign.center,
               ),
             ],
