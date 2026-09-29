@@ -16,121 +16,76 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       home: Scaffold(
         appBar: AppBar(title: const Text('Flutter UI Fundamentals')),
-        body: const GreetingCard(),
+        body: const TopicList(),
       ),
     );
   }
 }
 
-class GreetingCard extends StatefulWidget {
-  const GreetingCard({super.key});
-
-  @override
-  State<GreetingCard> createState() => _GreetingCardState();
-}
-
-class _GreetingCardState extends State<GreetingCard> {
-  final TextEditingController controller = TextEditingController();
-
-  String message = 'Belum ada pesan';
-
-  @override
-  void dispose() {
-    controller.dispose();
-    super.dispose();
-  }
+class TopicList extends StatelessWidget {
+  const TopicList({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const SizedBox(height: 30),
+    // Collection Dart
+    final List<Map<String, dynamic>> topics = [
+      {'title': 'Git & GitHub', 'subtitle': 'Version control', 'done': true},
+      {
+        'title': 'Dart Fundamentals',
+        'subtitle': 'Language basics',
+        'done': true,
+      },
+      {
+        'title': 'Flutter UI Fundamentals',
+        'subtitle': 'Widgets & layout',
+        'done': false,
+      },
+      {
+        'title': '$studentId - $studentName',
+        'subtitle': 'Pemilik aplikasi',
+        'done': false,
+      },
+    ];
 
-            // Identitas mahasiswa
-            const CircleAvatar(
-              radius: 46,
-              backgroundImage: AssetImage('assets/image/trisna.jpeg'),
-            ),
-
-            const SizedBox(height: 12),
-
-            const Text(
-              studentName,
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-            ),
-
-            const Text(studentId, style: TextStyle(fontSize: 18)),
-
-            const SizedBox(height: 24),
-
-            // Judul
-            const Text(
-              'Greeting Card',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-
-            const SizedBox(height: 16),
-
-            // Input
-            TextField(
-              controller: controller,
-              decoration: const InputDecoration(
-                labelText: 'Masukkan pesan',
-                hintText: 'Contoh: Halo, saya Trisna!',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.edit),
+    return Column(
+      children: [
+        // Identitas mahasiswa tetap di atas daftar
+        Padding(
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            children: [
+              const Text(
+                studentName,
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
               ),
-            ),
-
-            const SizedBox(height: 12),
-
-            // Tombol
-            ElevatedButton(
-              onPressed: () {
-                setState(() {
-                  message = controller.text.trim().isEmpty
-                      ? 'Input masih kosong'
-                      : controller.text.trim();
-                });
-              },
-              child: const Text('Tampilkan'),
-            ),
-
-            const SizedBox(height: 20),
-
-            // Hasil input
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  children: [
-                    const Icon(Icons.message, size: 40),
-
-                    const SizedBox(height: 8),
-
-                    const Text(
-                      'Pesan Anda:',
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-
-                    const SizedBox(height: 8),
-
-                    Text(
-                      message,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(fontSize: 18),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
+              const SizedBox(height: 4),
+              const Text(studentId, style: TextStyle(fontSize: 18)),
+            ],
+          ),
         ),
-      ),
+
+        const Divider(),
+
+        // ListView membutuhkan Expanded
+        Expanded(
+          child: ListView.builder(
+            itemCount: topics.length,
+            itemBuilder: (context, index) {
+              final item = topics[index];
+
+              return ListTile(
+                leading: Icon(
+                  item['done'] == true
+                      ? Icons.check_circle
+                      : Icons.circle_outlined,
+                ),
+                title: Text(item['title'] as String),
+                subtitle: Text(item['subtitle'] as String),
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 }
