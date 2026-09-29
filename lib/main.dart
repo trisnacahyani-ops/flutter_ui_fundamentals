@@ -17,10 +17,24 @@ class MyApp extends StatelessWidget {
       home: Scaffold(
         appBar: AppBar(title: const Text('Flutter UI Fundamentals')),
         body: Center(
-          child: Text(
-            '$studentId\n$studentName',
-            textAlign: TextAlign.left,
-            style: const TextStyle(fontSize: 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Text('$studentId - $studentName', textAlign: TextAlign.center),
+
+              const SizedBox(height: 12),
+
+              const Text(
+                'Belajar Widget Tree',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+
+              const SizedBox(height: 12),
+
+              const Icon(Icons.widgets, size: 48),
+            ],
           ),
         ),
       ),
