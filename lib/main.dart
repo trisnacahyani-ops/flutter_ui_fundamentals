@@ -14,31 +14,69 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Tahap 1 Responsive Layout',
-<<<<<<< HEAD
-      theme: ThemeData(primarySwatch: Colors.black),
-=======
-      theme: ThemeData(primarySwatch: Colors.blue),
->>>>>>> 9991e03 (tahap 1)
-      home: const ResponsiveLayoutPage(),
+      title: 'Tahap 2 MediaQuery',
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.black,
+        ),
+        useMaterial3: true,
+      ),
+      home: const MediaQueryPage(),
     );
   }
 }
 
-class ResponsiveLayoutPage extends StatelessWidget {
-  const ResponsiveLayoutPage({super.key});
+class MediaQueryPage extends StatelessWidget {
+  const MediaQueryPage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final orientation = MediaQuery.of(context).orientation;
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Tahap 1 - Responsive Layout')),
+      appBar: AppBar(
+        title: const Text('Tahap 2 - MediaQuery'),
+        backgroundColor: Colors.black,
+        foregroundColor: Colors.white,
+      ),
       body: Center(
-        child: Container(
-          width: 500,
+        child: Padding(
           padding: const EdgeInsets.all(16),
-          child: Text(
-            '$studentId - $studentName',
-            style: const TextStyle(fontSize: 18),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                '$studentId - $studentName',
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 18,
+                  color: Colors.black,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 24),
+              Text(
+                'Width: ${size.width.toStringAsFixed(0)}',
+                style: const TextStyle(fontSize: 18),
+              ),
+              Text(
+                'Height: ${size.height.toStringAsFixed(0)}',
+                style: const TextStyle(fontSize: 18),
+              ),
+              Text(
+                'Orientation: $orientation',
+                style: const TextStyle(fontSize: 18),
+              ),
+              const SizedBox(height: 24),
+              Text(
+                size.width < 600 ? 'Compact' : 'Wide',
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
           ),
         ),
       ),
