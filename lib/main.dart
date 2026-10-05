@@ -15,7 +15,11 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Tahap 1 Responsive Layout',
+<<<<<<< HEAD
       theme: ThemeData(primarySwatch: Colors.black),
+=======
+      theme: ThemeData(primarySwatch: Colors.blue),
+>>>>>>> 9991e03 (tahap 1)
       home: const ResponsiveLayoutPage(),
     );
   }
