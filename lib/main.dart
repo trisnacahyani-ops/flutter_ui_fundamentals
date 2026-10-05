@@ -14,7 +14,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Tahap 8 Passing Data',
+      title: 'Tahap 9 Returning Data',
       theme: ThemeData(
         useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.black),
@@ -96,7 +96,7 @@ class CourseListPage extends StatelessWidget {
         foregroundColor: Colors.white,
         centerTitle: true,
         title: const Text(
-          'Tahap 8 - Course List',
+          'Tahap 9 - Returning Data',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
       ),
@@ -128,7 +128,6 @@ class CourseListPage extends StatelessWidget {
             ),
           ),
 
-          // JUDUL
           const Padding(
             padding: EdgeInsets.fromLTRB(20, 20, 20, 8),
             child: Align(
@@ -145,7 +144,7 @@ class CourseListPage extends StatelessWidget {
             child: Align(
               alignment: Alignment.centerLeft,
               child: Text(
-                'Pilih course untuk melihat detail.',
+                'Pilih course untuk melihat detail dan favorite.',
                 style: TextStyle(color: Colors.grey, fontSize: 14),
               ),
             ),
@@ -153,7 +152,6 @@ class CourseListPage extends StatelessWidget {
 
           const SizedBox(height: 12),
 
-          // LIST COURSE
           Expanded(
             child: ListView.builder(
               padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
@@ -224,11 +222,27 @@ class CourseCard extends StatelessWidget {
 
         trailing: const Icon(Icons.arrow_forward_ios, size: 18),
 
-        onTap: () {
-          Navigator.push(
+        // =============================================
+        // MENERIMA DATA DARI DETAIL PAGE
+        // =============================================
+        onTap: () async {
+          final result = await Navigator.push<bool>(
             context,
             MaterialPageRoute(builder: (_) => CourseDetailPage(course: course)),
           );
+
+          // Jika DetailPage mengirim true
+          if (result == true && context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  '${course['title']} berhasil ditambahkan ke Favorite ❤️',
+                ),
+                duration: const Duration(seconds: 2),
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+          }
         },
       ),
     );
@@ -263,7 +277,7 @@ class CourseDetailPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // COURSE HEADER
+            // HEADER COURSE
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(22),
@@ -381,17 +395,20 @@ class CourseDetailPage extends StatelessWidget {
 
             const SizedBox(height: 28),
 
-            // TOMBOL KEMBALI
+            // =================================================
+            // TOMBOL PILIH / FAVORITE
+            // =================================================
             SizedBox(
               width: double.infinity,
-              height: 52,
+              height: 54,
               child: ElevatedButton.icon(
                 onPressed: () {
-                  Navigator.pop(context);
+                  // Mengirim nilai TRUE ke halaman sebelumnya
+                  Navigator.pop(context, true);
                 },
-                icon: const Icon(Icons.arrow_back),
+                icon: const Icon(Icons.favorite),
                 label: const Text(
-                  'Kembali ke Daftar Course',
+                  'Pilih / Favorite',
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
                 style: ElevatedButton.styleFrom(
@@ -404,12 +421,51 @@ class CourseDetailPage extends StatelessWidget {
               ),
             ),
 
+            const SizedBox(height: 12),
+
+            // TOMBOL KEMBALI BIASA
+            SizedBox(
+              width: double.infinity,
+              height: 50,
+              child: OutlinedButton.icon(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                icon: const Icon(Icons.arrow_back),
+                label: const Text(
+                  'Kembali',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: Colors.black,
+                  side: const BorderSide(color: Colors.black),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                ),
+              ),
+            ),
+
             const SizedBox(height: 20),
+
+            const Center(
+              child: Text(
+                'Navigator.pop(context, true)',
+                style: TextStyle(
+                  color: Colors.grey,
+                  fontStyle: FontStyle.italic,
+                ),
+              ),
+            ),
           ],
         ),
       ),
     );
   }
+
+  // =====================================================
+  // INFO CARD
+  // =====================================================
 
   static Widget buildInfoCard({
     required IconData icon,
@@ -446,7 +502,9 @@ class CourseDetailPage extends StatelessWidget {
                   title,
                   style: const TextStyle(color: Colors.grey, fontSize: 13),
                 ),
+
                 const SizedBox(height: 4),
+
                 Text(
                   value,
                   style: const TextStyle(
