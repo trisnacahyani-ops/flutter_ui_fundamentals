@@ -14,31 +14,34 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Tahap 6 Scrollable Content',
+      title: 'Tahap 7 Navigation',
       theme: ThemeData(
         useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.black),
       ),
-      home: const ProfilePage(),
+      home: const HomePage(),
     );
   }
 }
 
-class ProfilePage extends StatelessWidget {
-  const ProfilePage({super.key});
+// =====================================================
+// HOME PAGE
+// =====================================================
+
+class HomePage extends StatelessWidget {
+  const HomePage({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey.shade100,
-      resizeToAvoidBottomInset: true,
 
       appBar: AppBar(
         backgroundColor: Colors.black,
         foregroundColor: Colors.white,
         centerTitle: true,
         title: const Text(
-          'Tahap 6 - Profile Form',
+          'Tahap 7 - Navigation',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
       ),
@@ -48,28 +51,39 @@ class ProfilePage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // HEADER IDENTITAS
+            // HEADER
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.all(22),
               decoration: BoxDecoration(
                 color: Colors.black,
-                borderRadius: BorderRadius.circular(18),
+                borderRadius: BorderRadius.circular(20),
               ),
               child: const Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(Icons.person, color: Colors.white, size: 42),
-                  SizedBox(height: 12),
+                  Icon(Icons.home_rounded, color: Colors.white, size: 45),
+
+                  SizedBox(height: 14),
+
                   Text(
-                    studentName,
+                    'Home Page',
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: 20,
+                      fontSize: 24,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  SizedBox(height: 5),
+
+                  SizedBox(height: 8),
+
+                  Text(
+                    studentName,
+                    style: TextStyle(color: Colors.white, fontSize: 17),
+                  ),
+
+                  SizedBox(height: 4),
+
                   Text(
                     'NIM: $studentId',
                     style: TextStyle(color: Colors.white70, fontSize: 15),
@@ -78,98 +92,99 @@ class ProfilePage extends StatelessWidget {
               ),
             ),
 
-            const SizedBox(height: 24),
+            const SizedBox(height: 28),
 
             const Text(
-              'Profil Mahasiswa',
-              style: TextStyle(fontSize: 23, fontWeight: FontWeight.bold),
+              'Navigator.push()',
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
 
             const SizedBox(height: 8),
 
             const Text(
-              'Lengkapi data berikut. Halaman dapat di-scroll '
-              'ketika konten melebihi tinggi layar.',
-              style: TextStyle(color: Colors.grey, fontSize: 14),
+              'Tekan tombol di bawah untuk membuka '
+              'halaman detail.',
+              style: TextStyle(color: Colors.grey, fontSize: 15),
             ),
 
             const SizedBox(height: 20),
 
-            // FORM
-            buildTextField(
-              label: 'Nama Lengkap',
-              icon: Icons.person_outline,
-              initialValue: studentName,
-            ),
-
-            const SizedBox(height: 14),
-
-            buildTextField(
-              label: 'NIM',
-              icon: Icons.badge_outlined,
-              initialValue: studentId,
-            ),
-
-            const SizedBox(height: 14),
-
-            buildTextField(
-              label: 'Email',
-              icon: Icons.email_outlined,
-              hint: 'Masukkan email',
-              keyboardType: TextInputType.emailAddress,
-            ),
-
-            const SizedBox(height: 14),
-
-            buildTextField(
-              label: 'No. Telepon',
-              icon: Icons.phone_outlined,
-              hint: 'Masukkan nomor telepon',
-              keyboardType: TextInputType.phone,
-            ),
-
-            const SizedBox(height: 14),
-
-            buildTextField(
-              label: 'Alamat',
-              icon: Icons.location_on_outlined,
-              hint: 'Masukkan alamat',
-              maxLines: 3,
-            ),
-
-            const SizedBox(height: 14),
-
-            buildTextField(
-              label: 'Deskripsi Diri',
-              icon: Icons.edit_note,
-              hint: 'Ceritakan sedikit tentang diri Anda',
-              maxLines: 4,
-            ),
-
-            const SizedBox(height: 24),
-
-            // TOMBOL
-            SizedBox(
+            // CARD NAVIGATION
+            Container(
               width: double.infinity,
-              height: 52,
-              child: ElevatedButton.icon(
-                onPressed: () {},
-                icon: const Icon(Icons.save),
-                label: const Text(
-                  'Simpan Profil',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.black,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(18),
+                border: Border.all(color: Colors.black12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.06),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
                   ),
-                ),
+                ],
+              ),
+              child: Column(
+                children: [
+                  const Icon(
+                    Icons.open_in_new_rounded,
+                    size: 50,
+                    color: Colors.black,
+                  ),
+
+                  const SizedBox(height: 14),
+
+                  const Text(
+                    'Halaman Detail',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+
+                  const SizedBox(height: 8),
+
+                  const Text(
+                    'Gunakan Navigator.push() untuk '
+                    'berpindah dari HomePage ke DetailPage.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: Colors.grey, height: 1.4),
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  SizedBox(
+                    width: double.infinity,
+                    height: 52,
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const DetailPage(),
+                          ),
+                        );
+                      },
+                      icon: const Icon(Icons.arrow_forward),
+                      label: const Text(
+                        'Buka Detail',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.black,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
 
-            const SizedBox(height: 20),
+            const SizedBox(height: 24),
 
             // INFORMASI
             Container(
@@ -183,58 +198,216 @@ class ProfilePage extends StatelessWidget {
               child: const Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(Icons.info_outline, color: Colors.black),
+                  Icon(Icons.info_outline),
+
                   SizedBox(width: 12),
+
                   Expanded(
                     child: Text(
-                      'SingleChildScrollView digunakan agar seluruh '
-                      'form tetap dapat diakses ketika tinggi konten '
-                      'melebihi ukuran layar. Saat keyboard muncul, '
-                      'halaman tetap dapat digulir.',
+                      'Navigator bekerja seperti stack. '
+                      'push() menambahkan halaman baru, '
+                      'sedangkan pop() menghapus halaman '
+                      'teratas dan kembali ke halaman sebelumnya.',
                       style: TextStyle(height: 1.4),
                     ),
                   ),
                 ],
               ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+}
 
-            const SizedBox(height: 30),
+// =====================================================
+// DETAIL PAGE
+// =====================================================
+
+class DetailPage extends StatelessWidget {
+  const DetailPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.grey.shade100,
+
+      appBar: AppBar(
+        backgroundColor: Colors.black,
+        foregroundColor: Colors.white,
+        title: const Text(
+          'Detail Page',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+      ),
+
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // HEADER DETAIL
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(22),
+              decoration: BoxDecoration(
+                color: Colors.black,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: const Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(
+                    Icons.description_rounded,
+                    color: Colors.white,
+                    size: 45,
+                  ),
+
+                  SizedBox(height: 14),
+
+                  Text(
+                    'Detail Page',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 25,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+
+                  SizedBox(height: 8),
+
+                  Text(
+                    'Halaman kedua dari aplikasi.',
+                    style: TextStyle(color: Colors.white70, fontSize: 15),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 28),
+
+            const Text(
+              'Data Mahasiswa',
+              style: TextStyle(fontSize: 23, fontWeight: FontWeight.bold),
+            ),
+
+            const SizedBox(height: 16),
+
+            // DATA
+            buildInfoCard(
+              icon: Icons.person_outline,
+              title: 'Nama',
+              value: studentName,
+            ),
+
+            const SizedBox(height: 12),
+
+            buildInfoCard(
+              icon: Icons.badge_outlined,
+              title: 'NIM',
+              value: studentId,
+            ),
+
+            const SizedBox(height: 12),
+
+            buildInfoCard(
+              icon: Icons.school_outlined,
+              title: 'Praktikum',
+              value: 'Responsive Layout & Navigation',
+            ),
+
+            const SizedBox(height: 28),
+
+            // POP BUTTON
+            SizedBox(
+              width: double.infinity,
+              height: 52,
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                icon: const Icon(Icons.arrow_back),
+                label: const Text(
+                  'Kembali ke Home',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.black,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+            const Center(
+              child: Text(
+                'Navigator.pop()',
+                style: TextStyle(
+                  color: Colors.grey,
+                  fontStyle: FontStyle.italic,
+                ),
+              ),
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget buildTextField({
-    required String label,
+  static Widget buildInfoCard({
     required IconData icon,
-    String? hint,
-    String? initialValue,
-    TextInputType? keyboardType,
-    int maxLines = 1,
+    required String title,
+    required String value,
   }) {
-    return TextFormField(
-      initialValue: initialValue,
-      keyboardType: keyboardType,
-      maxLines: maxLines,
-      decoration: InputDecoration(
-        labelText: label,
-        hintText: hint,
-        prefixIcon: Icon(icon),
-        filled: true,
-        fillColor: Colors.white,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide.none,
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: Colors.black12),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: Colors.black, width: 2),
-        ),
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.black12),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 45,
+            height: 45,
+            decoration: BoxDecoration(
+              color: Colors.black,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(icon, color: Colors.white),
+          ),
+
+          const SizedBox(width: 14),
+
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(color: Colors.grey, fontSize: 13),
+                ),
+
+                const SizedBox(height: 3),
+
+                Text(
+                  value,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
