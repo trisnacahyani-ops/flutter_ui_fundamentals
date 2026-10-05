@@ -14,22 +14,77 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Tahap 7 Navigation',
+      title: 'Tahap 8 Passing Data',
       theme: ThemeData(
         useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.black),
       ),
-      home: const HomePage(),
+      home: const CourseListPage(),
     );
   }
 }
 
 // =====================================================
-// HOME PAGE
+// DATA COURSE
 // =====================================================
 
-class HomePage extends StatelessWidget {
-  const HomePage({super.key});
+const List<Map<String, dynamic>> courses = [
+  {
+    'title': 'Flutter Dasar',
+    'code': 'FL001',
+    'credits': 3,
+    'status': 'Aktif',
+    'description':
+        'Mempelajari dasar pengembangan aplikasi mobile menggunakan Flutter.',
+  },
+  {
+    'title': 'Pemrograman Dart',
+    'code': 'DR002',
+    'credits': 3,
+    'status': 'Aktif',
+    'description':
+        'Mempelajari konsep dasar pemrograman menggunakan bahasa Dart.',
+  },
+  {
+    'title': 'UI/UX Design',
+    'code': 'UI003',
+    'credits': 2,
+    'status': 'Aktif',
+    'description':
+        'Mempelajari prinsip desain antarmuka dan pengalaman pengguna.',
+  },
+  {
+    'title': 'Basis Data',
+    'code': 'BD004',
+    'credits': 3,
+    'status': 'Selesai',
+    'description':
+        'Mempelajari konsep basis data, tabel, relasi, dan pengelolaannya.',
+  },
+  {
+    'title': 'Jaringan Komputer',
+    'code': 'JK005',
+    'credits': 3,
+    'status': 'Aktif',
+    'description':
+        'Mempelajari konsep dasar jaringan komputer dan komunikasi data.',
+  },
+  {
+    'title': 'Rekayasa Perangkat Lunak',
+    'code': 'RPL006',
+    'credits': 3,
+    'status': 'Aktif',
+    'description':
+        'Mempelajari proses pengembangan perangkat lunak secara sistematis.',
+  },
+];
+
+// =====================================================
+// COURSE LIST PAGE
+// =====================================================
+
+class CourseListPage extends StatelessWidget {
+  const CourseListPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -41,192 +96,153 @@ class HomePage extends StatelessWidget {
         foregroundColor: Colors.white,
         centerTitle: true,
         title: const Text(
-          'Tahap 7 - Navigation',
+          'Tahap 8 - Course List',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
       ),
 
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // HEADER
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(22),
-              decoration: BoxDecoration(
-                color: Colors.black,
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: const Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Icon(Icons.home_rounded, color: Colors.white, size: 45),
-
-                  SizedBox(height: 14),
-
-                  Text(
-                    'Home Page',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
+      body: Column(
+        children: [
+          // HEADER IDENTITAS
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(20),
+            color: Colors.black,
+            child: const Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  studentName,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 19,
+                    fontWeight: FontWeight.bold,
                   ),
+                ),
+                SizedBox(height: 5),
+                Text(
+                  'NIM: $studentId',
+                  style: TextStyle(color: Colors.white70, fontSize: 15),
+                ),
+              ],
+            ),
+          ),
 
-                  SizedBox(height: 8),
-
-                  Text(
-                    studentName,
-                    style: TextStyle(color: Colors.white, fontSize: 17),
-                  ),
-
-                  SizedBox(height: 4),
-
-                  Text(
-                    'NIM: $studentId',
-                    style: TextStyle(color: Colors.white70, fontSize: 15),
-                  ),
-                ],
+          // JUDUL
+          const Padding(
+            padding: EdgeInsets.fromLTRB(20, 20, 20, 8),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'Daftar Course',
+                style: TextStyle(fontSize: 23, fontWeight: FontWeight.bold),
               ),
             ),
+          ),
 
-            const SizedBox(height: 28),
-
-            const Text(
-              'Navigator.push()',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-
-            const SizedBox(height: 8),
-
-            const Text(
-              'Tekan tombol di bawah untuk membuka '
-              'halaman detail.',
-              style: TextStyle(color: Colors.grey, fontSize: 15),
-            ),
-
-            const SizedBox(height: 20),
-
-            // CARD NAVIGATION
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(18),
-                border: Border.all(color: Colors.black12),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.06),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Column(
-                children: [
-                  const Icon(
-                    Icons.open_in_new_rounded,
-                    size: 50,
-                    color: Colors.black,
-                  ),
-
-                  const SizedBox(height: 14),
-
-                  const Text(
-                    'Halaman Detail',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
-
-                  const SizedBox(height: 8),
-
-                  const Text(
-                    'Gunakan Navigator.push() untuk '
-                    'berpindah dari HomePage ke DetailPage.',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.grey, height: 1.4),
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  SizedBox(
-                    width: double.infinity,
-                    height: 52,
-                    child: ElevatedButton.icon(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const DetailPage(),
-                          ),
-                        );
-                      },
-                      icon: const Icon(Icons.arrow_forward),
-                      label: const Text(
-                        'Buka Detail',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.black,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 20),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'Pilih course untuk melihat detail.',
+                style: TextStyle(color: Colors.grey, fontSize: 14),
               ),
             ),
+          ),
 
-            const SizedBox(height: 24),
+          const SizedBox(height: 12),
 
-            // INFORMASI
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(18),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.black12),
-              ),
-              child: const Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Icon(Icons.info_outline),
+          // LIST COURSE
+          Expanded(
+            child: ListView.builder(
+              padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
+              itemCount: courses.length,
+              itemBuilder: (context, index) {
+                final course = courses[index];
 
-                  SizedBox(width: 12),
-
-                  Expanded(
-                    child: Text(
-                      'Navigator bekerja seperti stack. '
-                      'push() menambahkan halaman baru, '
-                      'sedangkan pop() menghapus halaman '
-                      'teratas dan kembali ke halaman sebelumnya.',
-                      style: TextStyle(height: 1.4),
-                    ),
-                  ),
-                ],
-              ),
+                return CourseCard(course: course);
+              },
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 }
 
 // =====================================================
-// DETAIL PAGE
+// COURSE CARD
 // =====================================================
 
-class DetailPage extends StatelessWidget {
-  const DetailPage({super.key});
+class CourseCard extends StatelessWidget {
+  final Map<String, dynamic> course;
+
+  const CourseCard({super.key, required this.course});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: Colors.black12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: ListTile(
+        contentPadding: const EdgeInsets.all(16),
+
+        leading: Container(
+          width: 52,
+          height: 52,
+          decoration: BoxDecoration(
+            color: Colors.black,
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: const Icon(Icons.school, color: Colors.white),
+        ),
+
+        title: Text(
+          course['title'],
+          style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+        ),
+
+        subtitle: Padding(
+          padding: const EdgeInsets.only(top: 6),
+          child: Text(
+            '${course['code']} • ${course['credits']} SKS • ${course['status']}',
+            style: const TextStyle(color: Colors.grey),
+          ),
+        ),
+
+        trailing: const Icon(Icons.arrow_forward_ios, size: 18),
+
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => CourseDetailPage(course: course)),
+          );
+        },
+      ),
+    );
+  }
+}
+
+// =====================================================
+// COURSE DETAIL PAGE
+// =====================================================
+
+class CourseDetailPage extends StatelessWidget {
+  final Map<String, dynamic> course;
+
+  const CourseDetailPage({super.key, required this.course});
 
   @override
   Widget build(BuildContext context) {
@@ -237,7 +253,7 @@ class DetailPage extends StatelessWidget {
         backgroundColor: Colors.black,
         foregroundColor: Colors.white,
         title: const Text(
-          'Detail Page',
+          'Course Detail',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
       ),
@@ -247,7 +263,7 @@ class DetailPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // HEADER DETAIL
+            // COURSE HEADER
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(22),
@@ -255,46 +271,100 @@ class DetailPage extends StatelessWidget {
                 color: Colors.black,
                 borderRadius: BorderRadius.circular(20),
               ),
-              child: const Column(
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(
-                    Icons.description_rounded,
+                  const Icon(
+                    Icons.menu_book_rounded,
                     color: Colors.white,
                     size: 45,
                   ),
 
-                  SizedBox(height: 14),
+                  const SizedBox(height: 16),
 
                   Text(
-                    'Detail Page',
-                    style: TextStyle(
+                    course['title'],
+                    style: const TextStyle(
                       color: Colors.white,
                       fontSize: 25,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
 
-                  SizedBox(height: 8),
+                  const SizedBox(height: 8),
 
                   Text(
-                    'Halaman kedua dari aplikasi.',
-                    style: TextStyle(color: Colors.white70, fontSize: 15),
+                    course['code'],
+                    style: const TextStyle(color: Colors.white70, fontSize: 16),
                   ),
                 ],
               ),
             ),
 
-            const SizedBox(height: 28),
+            const SizedBox(height: 24),
 
             const Text(
-              'Data Mahasiswa',
-              style: TextStyle(fontSize: 23, fontWeight: FontWeight.bold),
+              'Informasi Course',
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
             ),
 
-            const SizedBox(height: 16),
+            const SizedBox(height: 14),
 
-            // DATA
+            buildInfoCard(
+              icon: Icons.code,
+              title: 'Kode Course',
+              value: course['code'],
+            ),
+
+            const SizedBox(height: 12),
+
+            buildInfoCard(
+              icon: Icons.school_outlined,
+              title: 'SKS',
+              value: '${course['credits']} SKS',
+            ),
+
+            const SizedBox(height: 12),
+
+            buildInfoCard(
+              icon: Icons.check_circle_outline,
+              title: 'Status',
+              value: course['status'],
+            ),
+
+            const SizedBox(height: 24),
+
+            const Text(
+              'Deskripsi',
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            ),
+
+            const SizedBox(height: 10),
+
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(18),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.black12),
+              ),
+              child: Text(
+                course['description'],
+                style: const TextStyle(height: 1.5, fontSize: 15),
+              ),
+            ),
+
+            const SizedBox(height: 24),
+
+            // DATA MAHASISWA
+            const Text(
+              'Data Mahasiswa',
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            ),
+
+            const SizedBox(height: 12),
+
             buildInfoCard(
               icon: Icons.person_outline,
               title: 'Nama',
@@ -309,17 +379,9 @@ class DetailPage extends StatelessWidget {
               value: studentId,
             ),
 
-            const SizedBox(height: 12),
-
-            buildInfoCard(
-              icon: Icons.school_outlined,
-              title: 'Praktikum',
-              value: 'Responsive Layout & Navigation',
-            ),
-
             const SizedBox(height: 28),
 
-            // POP BUTTON
+            // TOMBOL KEMBALI
             SizedBox(
               width: double.infinity,
               height: 52,
@@ -329,7 +391,7 @@ class DetailPage extends StatelessWidget {
                 },
                 icon: const Icon(Icons.arrow_back),
                 label: const Text(
-                  'Kembali ke Home',
+                  'Kembali ke Daftar Course',
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
                 style: ElevatedButton.styleFrom(
@@ -342,17 +404,7 @@ class DetailPage extends StatelessWidget {
               ),
             ),
 
-            const SizedBox(height: 16),
-
-            const Center(
-              child: Text(
-                'Navigator.pop()',
-                style: TextStyle(
-                  color: Colors.grey,
-                  fontStyle: FontStyle.italic,
-                ),
-              ),
-            ),
+            const SizedBox(height: 20),
           ],
         ),
       ),
@@ -366,7 +418,7 @@ class DetailPage extends StatelessWidget {
   }) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
@@ -394,9 +446,7 @@ class DetailPage extends StatelessWidget {
                   title,
                   style: const TextStyle(color: Colors.grey, fontSize: 13),
                 ),
-
-                const SizedBox(height: 3),
-
+                const SizedBox(height: 4),
                 Text(
                   value,
                   style: const TextStyle(
