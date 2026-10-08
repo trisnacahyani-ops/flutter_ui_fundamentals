@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import 'course_state.dart';
 
@@ -6,7 +7,12 @@ const String studentName = 'Ni Komang Trisna Cahyani';
 const String studentId = '2415051072';
 
 void main() {
-  runApp(const CourseExplorerApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (_) => CourseState(),
+      child: const CourseExplorerApp(),
+    ),
+  );
 }
 
 class CourseExplorerApp extends StatelessWidget {
@@ -16,7 +22,7 @@ class CourseExplorerApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Course Explorer - Tahap 5',
+      title: 'Course Explorer - Tahap 6',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.black),
         useMaterial3: true,
@@ -34,161 +40,149 @@ class MainPage extends StatefulWidget {
 }
 
 class _MainPageState extends State<MainPage> {
-  final CourseState courseState = CourseState();
-
-  @override
-  void dispose() {
-    courseState.dispose();
-    super.dispose();
-  }
-
   @override
   Widget build(BuildContext context) {
+    // Mengambil CourseState yang disediakan oleh Provider
+    final courseState = context.watch<CourseState>();
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Tahap 5 - ChangeNotifier')),
-      body: AnimatedBuilder(
-        animation: courseState,
-        builder: (context, child) {
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // ==============================================
-                // IDENTITAS
-                // ==============================================
+      appBar: AppBar(title: const Text('Tahap 6 - Provider')),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // ==============================================
+            // IDENTITAS
+            // ==============================================
 
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Identitas Mahasiswa',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text('Nama: $studentName'),
-                        Text('NIM: $studentId'),
-                      ],
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 24),
-
-                const Text(
-                  'Daftar Course',
-                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                ),
-
-                const SizedBox(height: 12),
-
-                // ==============================================
-                // COURSE 1
-                // ==============================================
-                CourseCard(
-                  courseId: 'flutter',
-                  courseName: 'Flutter UI Fundamentals',
-                  isFavorite: courseState.isFavorite('flutter'),
-                  onFavoriteChanged: () {
-                    courseState.toggleFavorite('flutter');
-                  },
-                ),
-
-                const SizedBox(height: 12),
-
-                // ==============================================
-                // COURSE 2
-                // ==============================================
-                CourseCard(
-                  courseId: 'state',
-                  courseName: 'State Management',
-                  isFavorite: courseState.isFavorite('state'),
-                  onFavoriteChanged: () {
-                    courseState.toggleFavorite('state');
-                  },
-                ),
-
-                const SizedBox(height: 24),
-
-                // ==============================================
-                // JUMLAH FAVORITE
-                // ==============================================
-                Card(
-                  color: Colors.black,
-                  child: Padding(
-                    padding: const EdgeInsets.all(20),
-                    child: Row(
-                      children: [
-                        const Icon(
-                          Icons.favorite,
-                          color: Colors.white,
-                          size: 32,
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Text(
-                            'Total Favorite: '
-                            '${courseState.favorites.length}',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 16),
-
-                // ==============================================
-                // DAFTAR FAVORITE
-                // ==============================================
-                if (courseState.favorites.isNotEmpty)
-                  Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Course Favorite:',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          ...courseState.favorites.map((id) {
-                            String name;
-
-                            if (id == 'flutter') {
-                              name = 'Flutter UI Fundamentals';
-                            } else {
-                              name = 'State Management';
-                            }
-
-                            return Padding(
-                              padding: const EdgeInsets.only(bottom: 4),
-                              child: Text('• $name'),
-                            );
-                          }),
-                        ],
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Identitas Mahasiswa',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-                  ),
-              ],
+                    const SizedBox(height: 8),
+                    Text('Nama: $studentName'),
+                    Text('NIM: $studentId'),
+                  ],
+                ),
+              ),
             ),
-          );
-        },
+
+            const SizedBox(height: 24),
+
+            // ==============================================
+            // DAFTAR COURSE
+            // ==============================================
+            const Text(
+              'Daftar Course',
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            ),
+
+            const SizedBox(height: 12),
+
+            // ==============================================
+            // COURSE 1
+            // ==============================================
+            CourseCard(
+              courseId: 'flutter',
+              courseName: 'Flutter UI Fundamentals',
+              isFavorite: courseState.isFavorite('flutter'),
+              onFavoriteChanged: () {
+                courseState.toggleFavorite('flutter');
+              },
+            ),
+
+            const SizedBox(height: 12),
+
+            // ==============================================
+            // COURSE 2
+            // ==============================================
+            CourseCard(
+              courseId: 'state',
+              courseName: 'State Management',
+              isFavorite: courseState.isFavorite('state'),
+              onFavoriteChanged: () {
+                courseState.toggleFavorite('state');
+              },
+            ),
+
+            const SizedBox(height: 24),
+
+            // ==============================================
+            // JUMLAH FAVORITE
+            // ==============================================
+            Card(
+              color: Colors.black,
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Row(
+                  children: [
+                    const Icon(Icons.favorite, color: Colors.white, size: 32),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Text(
+                        'Total Favorite: ${courseState.favorites.length}',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+            // ==============================================
+            // DAFTAR FAVORITE
+            // ==============================================
+            if (courseState.favorites.isNotEmpty)
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Course Favorite:',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      ...courseState.favorites.map((id) {
+                        String name;
+
+                        if (id == 'flutter') {
+                          name = 'Flutter UI Fundamentals';
+                        } else {
+                          name = 'State Management';
+                        }
+
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 4),
+                          child: Text('• $name'),
+                        );
+                      }),
+                    ],
+                  ),
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }
