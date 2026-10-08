@@ -14,7 +14,7 @@ class CourseExplorerApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Course Explorer - Tahap 2',
+      title: 'Course Explorer - Tahap 3',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.black),
         useMaterial3: true,
@@ -36,29 +36,28 @@ class MainPage extends StatefulWidget {
 }
 
 class _MainPageState extends State<MainPage> {
-  // Shared state disimpan di parent.
-  List<String> favorites = [];
+  // Single Source of Truth
+  bool favorite = false;
 
-  void toggleFavorite(String course) {
+  void toggleFavorite() {
     setState(() {
-      if (favorites.contains(course)) {
-        favorites.remove(course);
-      } else {
-        favorites.add(course);
-      }
+      favorite = !favorite;
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Tahap 2 - Prop Drilling')),
+      appBar: AppBar(title: const Text('Tahap 3 - Lifting State Up')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Nama dan NIM
+            // ==================================================
+            // IDENTITAS
+            // ==================================================
+
             Card(
               child: Padding(
                 padding: const EdgeInsets.all(16),
@@ -82,50 +81,52 @@ class _MainPageState extends State<MainPage> {
 
             const SizedBox(height: 20),
 
+            // ==================================================
+            // COURSE CARD
+            // ==================================================
             const Text(
-              'Daftar Course',
+              'Course',
               style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
             ),
 
             const SizedBox(height: 12),
 
-            // Child pertama
             CourseCard(
               courseName: 'Flutter UI Fundamentals',
-              isFavorite: favorites.contains('Flutter UI Fundamentals'),
-              onFavoriteChanged: () {
-                toggleFavorite('Flutter UI Fundamentals');
-              },
+              isFavorite: favorite,
+              onFavoriteChanged: toggleFavorite,
             ),
 
-            const SizedBox(height: 12),
+            const SizedBox(height: 20),
 
-            // Child kedua
-            CourseCard(
-              courseName: 'State Management',
-              isFavorite: favorites.contains('State Management'),
-              onFavoriteChanged: () {
-                toggleFavorite('State Management');
-              },
-            ),
+            // ==================================================
+            // WIDGET KEDUA
+            // ==================================================
+            FavoriteStatus(isFavorite: favorite),
 
-            const SizedBox(height: 24),
+            const SizedBox(height: 20),
 
-            // Menampilkan shared state
+            // ==================================================
+            // SINGLE SOURCE OF TRUTH
+            // ==================================================
             Card(
-              color: Colors.black,
+              color: favorite ? Colors.black : Colors.grey.shade200,
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: Row(
                   children: [
-                    const Icon(Icons.favorite, color: Colors.white),
+                    Icon(
+                      favorite ? Icons.check_circle : Icons.info_outline,
+                      color: favorite ? Colors.white : Colors.black,
+                    ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
-                        'Total Favorites: ${favorites.length}',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
+                        favorite
+                            ? 'State favorite = TRUE'
+                            : 'State favorite = FALSE',
+                        style: TextStyle(
+                          color: favorite ? Colors.white : Colors.black,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -134,26 +135,6 @@ class _MainPageState extends State<MainPage> {
                 ),
               ),
             ),
-
-            const SizedBox(height: 12),
-
-            if (favorites.isNotEmpty)
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Course yang Disukai:',
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 8),
-                      ...favorites.map((course) => Text('• $course')),
-                    ],
-                  ),
-                ),
-              ),
           ],
         ),
       ),
@@ -162,7 +143,7 @@ class _MainPageState extends State<MainPage> {
 }
 
 // ======================================================
-// CHILD
+// CHILD 1
 // ======================================================
 
 class CourseCard extends StatelessWidget {
@@ -186,10 +167,50 @@ class CourseCard extends StatelessWidget {
           courseName,
           style: const TextStyle(fontWeight: FontWeight.bold),
         ),
-        subtitle: const Text('Course pada aplikasi Course Explorer'),
+        subtitle: Text(
+          isFavorite
+              ? 'Course ditambahkan ke favorite'
+              : 'Course belum menjadi favorite',
+        ),
         trailing: IconButton(
           onPressed: onFavoriteChanged,
           icon: Icon(isFavorite ? Icons.favorite : Icons.favorite_border),
+        ),
+      ),
+    );
+  }
+}
+
+// ======================================================
+// CHILD 2
+// ======================================================
+
+class FavoriteStatus extends StatelessWidget {
+  final bool isFavorite;
+
+  const FavoriteStatus({super.key, required this.isFavorite});
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          children: [
+            Icon(isFavorite ? Icons.favorite : Icons.favorite_border, size: 32),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                isFavorite
+                    ? 'Favorite Status: AKTIF'
+                    : 'Favorite Status: TIDAK AKTIF',
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
