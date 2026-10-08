@@ -22,7 +22,7 @@ class CourseExplorerApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Course Explorer - Tahap 6',
+      title: 'Course Explorer - Tahap 7',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.black),
         useMaterial3: true,
@@ -32,21 +32,17 @@ class CourseExplorerApp extends StatelessWidget {
   }
 }
 
-class MainPage extends StatefulWidget {
+class MainPage extends StatelessWidget {
   const MainPage({super.key});
 
   @override
-  State<MainPage> createState() => _MainPageState();
-}
-
-class _MainPageState extends State<MainPage> {
-  @override
   Widget build(BuildContext context) {
-    // Mengambil CourseState yang disediakan oleh Provider
+    // WATCH
+    // watch digunakan untuk membaca state dan mendengarkan perubahan.
     final courseState = context.watch<CourseState>();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Tahap 6 - Provider')),
+      appBar: AppBar(title: const Text('Tahap 7 - Provider')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -93,11 +89,13 @@ class _MainPageState extends State<MainPage> {
             // COURSE 1
             // ==============================================
             CourseCard(
-              courseId: 'flutter',
               courseName: 'Flutter UI Fundamentals',
               isFavorite: courseState.isFavorite('flutter'),
               onFavoriteChanged: () {
-                courseState.toggleFavorite('flutter');
+                // READ
+                // read digunakan untuk menjalankan aksi
+                // tanpa membuat widget mendengarkan perubahan.
+                context.read<CourseState>().toggleFavorite('flutter');
               },
             ),
 
@@ -107,18 +105,18 @@ class _MainPageState extends State<MainPage> {
             // COURSE 2
             // ==============================================
             CourseCard(
-              courseId: 'state',
               courseName: 'State Management',
               isFavorite: courseState.isFavorite('state'),
               onFavoriteChanged: () {
-                courseState.toggleFavorite('state');
+                // READ
+                context.read<CourseState>().toggleFavorite('state');
               },
             ),
 
             const SizedBox(height: 24),
 
             // ==============================================
-            // JUMLAH FAVORITE
+            // TOTAL FAVORITE
             // ==============================================
             Card(
               color: Colors.black,
@@ -130,7 +128,8 @@ class _MainPageState extends State<MainPage> {
                     const SizedBox(width: 16),
                     Expanded(
                       child: Text(
-                        'Total Favorite: ${courseState.favorites.length}',
+                        'Total Favorite: '
+                        '${courseState.favorites.length}',
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 18,
@@ -141,6 +140,40 @@ class _MainPageState extends State<MainPage> {
                   ],
                 ),
               ),
+            ),
+
+            const SizedBox(height: 16),
+
+            // ==============================================
+            // CONSUMER
+            // ==============================================
+            Consumer<CourseState>(
+              builder: (context, state, child) {
+                return Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Consumer Area',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          state.favorites.isEmpty
+                              ? 'Belum ada course favorite.'
+                              : 'Jumlah course favorite: '
+                                    '${state.favorites.length}',
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
             ),
 
             const SizedBox(height: 16),
@@ -163,6 +196,7 @@ class _MainPageState extends State<MainPage> {
                         ),
                       ),
                       const SizedBox(height: 8),
+
                       ...courseState.favorites.map((id) {
                         String name;
 
@@ -193,14 +227,12 @@ class _MainPageState extends State<MainPage> {
 // ======================================================
 
 class CourseCard extends StatelessWidget {
-  final String courseId;
   final String courseName;
   final bool isFavorite;
   final VoidCallback onFavoriteChanged;
 
   const CourseCard({
     super.key,
-    required this.courseId,
     required this.courseName,
     required this.isFavorite,
     required this.onFavoriteChanged,
