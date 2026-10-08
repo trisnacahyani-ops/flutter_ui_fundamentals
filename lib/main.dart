@@ -14,7 +14,7 @@ class CourseExplorerApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Course Explorer - Tahap 3',
+      title: 'Course Explorer - Tahap 4',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.black),
         useMaterial3: true,
@@ -24,32 +24,17 @@ class CourseExplorerApp extends StatelessWidget {
   }
 }
 
-// ======================================================
-// PARENT
-// ======================================================
-
-class MainPage extends StatefulWidget {
+class MainPage extends StatelessWidget {
   const MainPage({super.key});
 
   @override
-  State<MainPage> createState() => _MainPageState();
-}
-
-class _MainPageState extends State<MainPage> {
-  // Single Source of Truth
-  bool favorite = false;
-
-  void toggleFavorite() {
-    setState(() {
-      favorite = !favorite;
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
+    // ValueNotifier untuk menyimpan jumlah favorite.
+    final ValueNotifier<int> favoriteCount = ValueNotifier<int>(0);
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Tahap 3 - Lifting State Up')),
-      body: SingleChildScrollView(
+      appBar: AppBar(title: const Text('Tahap 4 - ValueNotifier')),
+      body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -79,134 +64,127 @@ class _MainPageState extends State<MainPage> {
               ),
             ),
 
+            const SizedBox(height: 24),
+
+            const Text(
+              'ValueNotifier Demo',
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            ),
+
+            const SizedBox(height: 8),
+
+            const Text('Jumlah favorite menggunakan ValueNotifier.'),
+
             const SizedBox(height: 20),
 
             // ==================================================
-            // COURSE CARD
+            // VALUE LISTENABLE BUILDER
             // ==================================================
-            const Text(
-              'Course',
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            ValueListenableBuilder<int>(
+              valueListenable: favoriteCount,
+              builder: (context, value, child) {
+                return Card(
+                  color: Colors.black,
+                  child: Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Row(
+                      children: [
+                        const Icon(
+                          Icons.favorite,
+                          color: Colors.white,
+                          size: 32,
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Jumlah Favorite',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                '$value',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 32,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+
+            const SizedBox(height: 20),
+
+            // ==================================================
+            // BUTTON
+            // ==================================================
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  favoriteCount.value++;
+                },
+                icon: const Icon(Icons.favorite),
+                label: const Text('Tambah Favorite'),
+              ),
             ),
 
             const SizedBox(height: 12),
 
-            CourseCard(
-              courseName: 'Flutter UI Fundamentals',
-              isFavorite: favorite,
-              onFavoriteChanged: toggleFavorite,
-            ),
-
-            const SizedBox(height: 20),
-
-            // ==================================================
-            // WIDGET KEDUA
-            // ==================================================
-            FavoriteStatus(isFavorite: favorite),
-
-            const SizedBox(height: 20),
-
-            // ==================================================
-            // SINGLE SOURCE OF TRUTH
-            // ==================================================
-            Card(
-              color: favorite ? Colors.black : Colors.grey.shade200,
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Row(
-                  children: [
-                    Icon(
-                      favorite ? Icons.check_circle : Icons.info_outline,
-                      color: favorite ? Colors.white : Colors.black,
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        favorite
-                            ? 'State favorite = TRUE'
-                            : 'State favorite = FALSE',
-                        style: TextStyle(
-                          color: favorite ? Colors.white : Colors.black,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: () {
+                  if (favoriteCount.value > 0) {
+                    favoriteCount.value--;
+                  }
+                },
+                icon: const Icon(Icons.remove),
+                label: const Text('Kurangi Favorite'),
               ),
             ),
-          ],
-        ),
-      ),
-    );
-  }
-}
 
-// ======================================================
-// CHILD 1
-// ======================================================
+            const SizedBox(height: 24),
 
-class CourseCard extends StatelessWidget {
-  final String courseName;
-  final bool isFavorite;
-  final VoidCallback onFavoriteChanged;
-
-  const CourseCard({
-    super.key,
-    required this.courseName,
-    required this.isFavorite,
-    required this.onFavoriteChanged,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      child: ListTile(
-        leading: const Icon(Icons.school),
-        title: Text(
-          courseName,
-          style: const TextStyle(fontWeight: FontWeight.bold),
-        ),
-        subtitle: Text(
-          isFavorite
-              ? 'Course ditambahkan ke favorite'
-              : 'Course belum menjadi favorite',
-        ),
-        trailing: IconButton(
-          onPressed: onFavoriteChanged,
-          icon: Icon(isFavorite ? Icons.favorite : Icons.favorite_border),
-        ),
-      ),
-    );
-  }
-}
-
-// ======================================================
-// CHILD 2
-// ======================================================
-
-class FavoriteStatus extends StatelessWidget {
-  final bool isFavorite;
-
-  const FavoriteStatus({super.key, required this.isFavorite});
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          children: [
-            Icon(isFavorite ? Icons.favorite : Icons.favorite_border, size: 32),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                isFavorite
-                    ? 'Favorite Status: AKTIF'
-                    : 'Favorite Status: TIDAK AKTIF',
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
+            // ==================================================
+            // PERBANDINGAN
+            // ==================================================
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Perbandingan',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    const Text(
+                      'setState(): mengubah state pada StatefulWidget '
+                      'dan membangun ulang bagian widget yang terkait.',
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'ValueNotifier: menyimpan satu nilai sederhana '
+                      'dan memberitahu listener ketika nilai berubah.',
+                    ),
+                  ],
                 ),
               ),
             ),
