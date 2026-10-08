@@ -1,7 +1,33 @@
 import 'package:flutter/foundation.dart';
 
+import 'models/course.dart';
+import 'services/course_service.dart';
+
 class CourseState extends ChangeNotifier {
+  final CourseService service;
+
+  CourseState(this.service);
+
+  List<Course> courses = [];
   final Set<String> favorites = {};
+
+  bool isLoading = false;
+  String? errorMessage;
+
+  Future<void> loadCourses() async {
+    isLoading = true;
+    errorMessage = null;
+    notifyListeners();
+
+    try {
+      courses = await service.loadCourses();
+    } catch (e) {
+      errorMessage = 'Gagal memuat data course: $e';
+    }
+
+    isLoading = false;
+    notifyListeners();
+  }
 
   void toggleFavorite(String id) {
     if (favorites.contains(id)) {
