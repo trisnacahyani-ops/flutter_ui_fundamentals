@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'course_state.dart';
+import 'models/course.dart';
 
 const String studentName = 'Ni Komang Trisna Cahyani';
 const String studentId = '2415051072';
@@ -22,7 +23,7 @@ class CourseExplorerApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Course Explorer - Tahap 7',
+      title: 'Course Explorer - Tahap 8',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.black),
         useMaterial3: true,
@@ -37,19 +38,35 @@ class MainPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // WATCH
-    // watch digunakan untuk membaca state dan mendengarkan perubahan.
+    // Mengambil CourseState dari Provider
     final courseState = context.watch<CourseState>();
 
+    // ==============================================
+    // DATA JSON
+    // ==============================================
+
+    const Map<String, dynamic> courseJson = {
+      'code': 'PTI501',
+      'title': 'Pemrograman Mobile',
+      'credits': 3,
+      'status': 'Aktif',
+    };
+
+    // ==============================================
+    // MENGUBAH JSON MENJADI OBJECT COURSE
+    // ==============================================
+
+    final Course course = Course.fromJson(courseJson);
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Tahap 7 - Provider')),
+      appBar: AppBar(title: const Text('Tahap 8 - Model Course')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // ==============================================
-            // IDENTITAS
+            // IDENTITAS MAHASISWA
             // ==============================================
 
             Card(
@@ -76,68 +93,141 @@ class MainPage extends StatelessWidget {
             const SizedBox(height: 24),
 
             // ==============================================
-            // DAFTAR COURSE
+            // DATA COURSE
             // ==============================================
             const Text(
-              'Daftar Course',
+              'Data Course',
               style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
             ),
 
             const SizedBox(height: 12),
 
-            // ==============================================
-            // COURSE 1
-            // ==============================================
-            CourseCard(
-              courseName: 'Flutter UI Fundamentals',
-              isFavorite: courseState.isFavorite('flutter'),
-              onFavoriteChanged: () {
-                // READ
-                // read digunakan untuk menjalankan aksi
-                // tanpa membuat widget mendengarkan perubahan.
-                context.read<CourseState>().toggleFavorite('flutter');
-              },
-            ),
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(Icons.school, size: 32),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            course.title,
+                            style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
 
-            const SizedBox(height: 12),
+                    const Divider(height: 24),
 
-            // ==============================================
-            // COURSE 2
-            // ==============================================
-            CourseCard(
-              courseName: 'State Management',
-              isFavorite: courseState.isFavorite('state'),
-              onFavoriteChanged: () {
-                // READ
-                context.read<CourseState>().toggleFavorite('state');
-              },
+                    Text(
+                      'Kode Course: ${course.code}',
+                      style: const TextStyle(fontSize: 16),
+                    ),
+
+                    const SizedBox(height: 8),
+
+                    Text(
+                      'SKS: ${course.credits}',
+                      style: const TextStyle(fontSize: 16),
+                    ),
+
+                    const SizedBox(height: 8),
+
+                    Row(
+                      children: [
+                        const Text('Status: ', style: TextStyle(fontSize: 16)),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.black,
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Text(
+                            course.status,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
             ),
 
             const SizedBox(height: 24),
 
             // ==============================================
-            // TOTAL FAVORITE
+            // INFORMASI MODEL
             // ==============================================
             Card(
               color: Colors.black,
               child: Padding(
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.all(16),
                 child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Icon(Icons.favorite, color: Colors.white, size: 32),
-                    const SizedBox(width: 16),
+                    const Icon(Icons.code, color: Colors.white, size: 30),
+                    const SizedBox(width: 12),
                     Expanded(
                       child: Text(
-                        'Total Favorite: '
-                        '${courseState.favorites.length}',
+                        'Data JSON berhasil diubah menjadi '
+                        'object Course menggunakan Course.fromJson().',
                         style: const TextStyle(
                           color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
                         ),
                       ),
                     ),
                   ],
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 24),
+
+            // ==============================================
+            // FAVORITE COURSE
+            // ==============================================
+            const Text(
+              'Favorite Course',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+
+            const SizedBox(height: 12),
+
+            Card(
+              child: ListTile(
+                leading: const Icon(Icons.school),
+                title: Text(
+                  course.title,
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+                subtitle: Text(
+                  'Kode: ${course.code}\n'
+                  '${courseState.isFavorite(course.code) ? 'Course favorite' : 'Belum favorite'}',
+                ),
+                trailing: IconButton(
+                  onPressed: () {
+                    context.read<CourseState>().toggleFavorite(course.code);
+                  },
+                  icon: Icon(
+                    courseState.isFavorite(course.code)
+                        ? Icons.favorite
+                        : Icons.favorite_border,
+                  ),
                 ),
               ),
             ),
@@ -152,22 +242,16 @@ class MainPage extends StatelessWidget {
                 return Card(
                   child: Padding(
                     padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    child: Row(
                       children: [
-                        const Text(
-                          'Consumer Area',
-                          style: TextStyle(
+                        const Icon(Icons.favorite, size: 28),
+                        const SizedBox(width: 12),
+                        Text(
+                          'Total Favorite: ${state.favorites.length}',
+                          style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
                           ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          state.favorites.isEmpty
-                              ? 'Belum ada course favorite.'
-                              : 'Jumlah course favorite: '
-                                    '${state.favorites.length}',
                         ),
                       ],
                     ),
@@ -175,86 +259,7 @@ class MainPage extends StatelessWidget {
                 );
               },
             ),
-
-            const SizedBox(height: 16),
-
-            // ==============================================
-            // DAFTAR FAVORITE
-            // ==============================================
-            if (courseState.favorites.isNotEmpty)
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Course Favorite:',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-
-                      ...courseState.favorites.map((id) {
-                        String name;
-
-                        if (id == 'flutter') {
-                          name = 'Flutter UI Fundamentals';
-                        } else {
-                          name = 'State Management';
-                        }
-
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 4),
-                          child: Text('• $name'),
-                        );
-                      }),
-                    ],
-                  ),
-                ),
-              ),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-// ======================================================
-// COURSE CARD
-// ======================================================
-
-class CourseCard extends StatelessWidget {
-  final String courseName;
-  final bool isFavorite;
-  final VoidCallback onFavoriteChanged;
-
-  const CourseCard({
-    super.key,
-    required this.courseName,
-    required this.isFavorite,
-    required this.onFavoriteChanged,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      child: ListTile(
-        leading: const Icon(Icons.school),
-        title: Text(
-          courseName,
-          style: const TextStyle(fontWeight: FontWeight.bold),
-        ),
-        subtitle: Text(
-          isFavorite
-              ? 'Course ditambahkan ke favorite'
-              : 'Course belum menjadi favorite',
-        ),
-        trailing: IconButton(
-          onPressed: onFavoriteChanged,
-          icon: Icon(isFavorite ? Icons.favorite : Icons.favorite_border),
         ),
       ),
     );
