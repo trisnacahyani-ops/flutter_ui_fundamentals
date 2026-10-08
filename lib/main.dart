@@ -7,6 +7,10 @@ void main() {
   runApp(const MyApp());
 }
 
+// ============================================================
+// APP
+// ============================================================
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -14,152 +18,319 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Tahap 9 Returning Data',
+      title: 'Tahap 10 NavigationBar',
       theme: ThemeData(
         useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.black),
+        scaffoldBackgroundColor: const Color(0xFFF7F7F7),
       ),
-      home: const CourseListPage(),
+      home: const MainNavigationPage(),
     );
   }
 }
 
-// =====================================================
-// DATA COURSE
-// =====================================================
+// ============================================================
+// MAIN NAVIGATION PAGE
+// ============================================================
 
-const List<Map<String, dynamic>> courses = [
-  {
-    'title': 'Flutter Dasar',
-    'code': 'FL001',
-    'credits': 3,
-    'status': 'Aktif',
-    'description':
-        'Mempelajari dasar pengembangan aplikasi mobile menggunakan Flutter.',
-  },
-  {
-    'title': 'Pemrograman Dart',
-    'code': 'DR002',
-    'credits': 3,
-    'status': 'Aktif',
-    'description':
-        'Mempelajari konsep dasar pemrograman menggunakan bahasa Dart.',
-  },
-  {
-    'title': 'UI/UX Design',
-    'code': 'UI003',
-    'credits': 2,
-    'status': 'Aktif',
-    'description':
-        'Mempelajari prinsip desain antarmuka dan pengalaman pengguna.',
-  },
-  {
-    'title': 'Basis Data',
-    'code': 'BD004',
-    'credits': 3,
-    'status': 'Selesai',
-    'description':
-        'Mempelajari konsep basis data, tabel, relasi, dan pengelolaannya.',
-  },
-  {
-    'title': 'Jaringan Komputer',
-    'code': 'JK005',
-    'credits': 3,
-    'status': 'Aktif',
-    'description':
-        'Mempelajari konsep dasar jaringan komputer dan komunikasi data.',
-  },
-  {
-    'title': 'Rekayasa Perangkat Lunak',
-    'code': 'RPL006',
-    'credits': 3,
-    'status': 'Aktif',
-    'description':
-        'Mempelajari proses pengembangan perangkat lunak secara sistematis.',
-  },
-];
+class MainNavigationPage extends StatefulWidget {
+  const MainNavigationPage({super.key});
 
-// =====================================================
-// COURSE LIST PAGE
-// =====================================================
+  @override
+  State<MainNavigationPage> createState() => _MainNavigationPageState();
+}
 
-class CourseListPage extends StatelessWidget {
-  const CourseListPage({super.key});
+class _MainNavigationPageState extends State<MainNavigationPage> {
+  int currentIndex = 0;
+
+  final List<Widget> pages = const [HomePage(), CoursesPage(), ProfilePage()];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey.shade100,
+      body: pages[currentIndex],
 
-      appBar: AppBar(
-        backgroundColor: Colors.black,
-        foregroundColor: Colors.white,
-        centerTitle: true,
-        title: const Text(
-          'Tahap 9 - Returning Data',
-          style: TextStyle(fontWeight: FontWeight.bold),
+      // ======================================================
+      // NAVIGATION BAR
+      // ======================================================
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: currentIndex,
+
+        onDestinationSelected: (index) {
+          setState(() {
+            currentIndex = index;
+          });
+        },
+
+        destinations: const [
+          NavigationDestination(
+            icon: Icon(Icons.home_outlined),
+            selectedIcon: Icon(Icons.home),
+            label: 'Home',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.menu_book_outlined),
+            selectedIcon: Icon(Icons.menu_book),
+            label: 'Courses',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.person_outline),
+            selectedIcon: Icon(Icons.person),
+            label: 'Profile',
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ============================================================
+// HOME PAGE
+// ============================================================
+
+class HomePage extends StatelessWidget {
+  const HomePage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 20),
+
+            // Header
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: Colors.black,
+                borderRadius: BorderRadius.circular(24),
+              ),
+              child: const Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(Icons.phone_android, color: Colors.white, size: 40),
+                  SizedBox(height: 20),
+                  Text(
+                    'Flutter UI Fundamentals',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 25,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SizedBox(height: 8),
+                  Text(
+                    'Tahap 10 - NavigationBar',
+                    style: TextStyle(color: Colors.white70, fontSize: 15),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 24),
+
+            const Text(
+              'Identitas Mahasiswa',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+
+            const SizedBox(height: 12),
+
+            const InfoCard(
+              icon: Icons.person,
+              title: 'Nama',
+              value: studentName,
+            ),
+
+            const SizedBox(height: 12),
+
+            const InfoCard(icon: Icons.badge, title: 'NIM', value: studentId),
+
+            const SizedBox(height: 24),
+
+            const Text(
+              'Menu Utama',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+
+            const SizedBox(height: 12),
+
+            const FeatureCard(
+              icon: Icons.menu_book,
+              title: 'Courses',
+              description: 'Melihat daftar mata kuliah yang tersedia.',
+            ),
+
+            const SizedBox(height: 12),
+
+            const FeatureCard(
+              icon: Icons.person,
+              title: 'Profile',
+              description: 'Melihat informasi dan identitas mahasiswa.',
+            ),
+          ],
         ),
       ),
+    );
+  }
+}
 
-      body: Column(
+// ============================================================
+// COURSES PAGE
+// ============================================================
+
+class CoursesPage extends StatelessWidget {
+  const CoursesPage({super.key});
+
+  final List<Map<String, String>> courses = const [
+    {
+      'title': 'Flutter Dasar',
+      'code': 'FL001',
+      'credits': '3 SKS',
+      'status': 'Aktif',
+    },
+    {
+      'title': 'Pemrograman Dart',
+      'code': 'DT002',
+      'credits': '3 SKS',
+      'status': 'Aktif',
+    },
+    {
+      'title': 'UI/UX Design',
+      'code': 'UX003',
+      'credits': '2 SKS',
+      'status': 'Aktif',
+    },
+    {
+      'title': 'Basis Data',
+      'code': 'BD004',
+      'credits': '3 SKS',
+      'status': 'Aktif',
+    },
+    {
+      'title': 'Jaringan Komputer',
+      'code': 'JK005',
+      'credits': '3 SKS',
+      'status': 'Aktif',
+    },
+    {
+      'title': 'Rekayasa Perangkat Lunak',
+      'code': 'RPL006',
+      'credits': '3 SKS',
+      'status': 'Aktif',
+    },
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: Column(
         children: [
-          // HEADER IDENTITAS
+          // Header
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
             color: Colors.black,
             child: const Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  studentName,
+                  'Courses',
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: 19,
+                    fontSize: 28,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                SizedBox(height: 5),
+                SizedBox(height: 6),
                 Text(
-                  'NIM: $studentId',
+                  'Daftar mata kuliah',
                   style: TextStyle(color: Colors.white70, fontSize: 15),
                 ),
               ],
             ),
           ),
 
-          const Padding(
-            padding: EdgeInsets.fromLTRB(20, 20, 20, 8),
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                'Daftar Course',
-                style: TextStyle(fontSize: 23, fontWeight: FontWeight.bold),
-              ),
-            ),
-          ),
-
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20),
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                'Pilih course untuk melihat detail dan favorite.',
-                style: TextStyle(color: Colors.grey, fontSize: 14),
-              ),
-            ),
-          ),
-
-          const SizedBox(height: 12),
-
+          // Course list
           Expanded(
             child: ListView.builder(
-              padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
+              padding: const EdgeInsets.all(16),
               itemCount: courses.length,
               itemBuilder: (context, index) {
                 final course = courses[index];
 
-                return CourseCard(course: course);
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  padding: const EdgeInsets.all(18),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(18),
+                    border: Border.all(color: Colors.black12),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 50,
+                        height: 50,
+                        decoration: BoxDecoration(
+                          color: Colors.black,
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        child: const Icon(Icons.book, color: Colors.white),
+                      ),
+
+                      const SizedBox(width: 14),
+
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              course['title']!,
+                              style: const TextStyle(
+                                fontSize: 17,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+
+                            const SizedBox(height: 6),
+
+                            Text(
+                              '${course['code']} • ${course['credits']}',
+                              style: const TextStyle(color: Colors.black54),
+                            ),
+
+                            const SizedBox(height: 6),
+
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 5,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.black,
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Text(
+                                course['status']!,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      const Icon(Icons.chevron_right, color: Colors.black54),
+                    ],
+                  ),
+                );
               },
             ),
           ),
@@ -169,315 +340,116 @@ class CourseListPage extends StatelessWidget {
   }
 }
 
-// =====================================================
-// COURSE CARD
-// =====================================================
+// ============================================================
+// PROFILE PAGE
+// ============================================================
 
-class CourseCard extends StatelessWidget {
-  final Map<String, dynamic> course;
-
-  const CourseCard({super.key, required this.course});
+class ProfilePage extends StatelessWidget {
+  const ProfilePage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: Colors.black12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: ListTile(
-        contentPadding: const EdgeInsets.all(16),
-
-        leading: Container(
-          width: 52,
-          height: 52,
-          decoration: BoxDecoration(
-            color: Colors.black,
-            borderRadius: BorderRadius.circular(14),
-          ),
-          child: const Icon(Icons.school, color: Colors.white),
-        ),
-
-        title: Text(
-          course['title'],
-          style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
-        ),
-
-        subtitle: Padding(
-          padding: const EdgeInsets.only(top: 6),
-          child: Text(
-            '${course['code']} • ${course['credits']} SKS • ${course['status']}',
-            style: const TextStyle(color: Colors.grey),
-          ),
-        ),
-
-        trailing: const Icon(Icons.arrow_forward_ios, size: 18),
-
-        // =============================================
-        // MENERIMA DATA DARI DETAIL PAGE
-        // =============================================
-        onTap: () async {
-          final result = await Navigator.push<bool>(
-            context,
-            MaterialPageRoute(builder: (_) => CourseDetailPage(course: course)),
-          );
-
-          // Jika DetailPage mengirim true
-          if (result == true && context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(
-                  '${course['title']} berhasil ditambahkan ke Favorite ❤️',
-                ),
-                duration: const Duration(seconds: 2),
-                behavior: SnackBarBehavior.floating,
-              ),
-            );
-          }
-        },
-      ),
-    );
-  }
-}
-
-// =====================================================
-// COURSE DETAIL PAGE
-// =====================================================
-
-class CourseDetailPage extends StatelessWidget {
-  final Map<String, dynamic> course;
-
-  const CourseDetailPage({super.key, required this.course});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.grey.shade100,
-
-      appBar: AppBar(
-        backgroundColor: Colors.black,
-        foregroundColor: Colors.white,
-        title: const Text(
-          'Course Detail',
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-      ),
-
-      body: SingleChildScrollView(
+    return SafeArea(
+      child: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // HEADER COURSE
+            const SizedBox(height: 20),
+
+            // Profile icon
             Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(22),
-              decoration: BoxDecoration(
+              width: 110,
+              height: 110,
+              decoration: const BoxDecoration(
                 color: Colors.black,
-                borderRadius: BorderRadius.circular(20),
+                shape: BoxShape.circle,
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Icon(
-                    Icons.menu_book_rounded,
-                    color: Colors.white,
-                    size: 45,
-                  ),
-
-                  const SizedBox(height: 16),
-
-                  Text(
-                    course['title'],
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 25,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-
-                  const SizedBox(height: 8),
-
-                  Text(
-                    course['code'],
-                    style: const TextStyle(color: Colors.white70, fontSize: 16),
-                  ),
-                ],
-              ),
+              child: const Icon(Icons.person, color: Colors.white, size: 60),
             ),
 
-            const SizedBox(height: 24),
+            const SizedBox(height: 20),
 
             const Text(
-              'Informasi Course',
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+              studentName,
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 23, fontWeight: FontWeight.bold),
             ),
 
-            const SizedBox(height: 14),
-
-            buildInfoCard(
-              icon: Icons.code,
-              title: 'Kode Course',
-              value: course['code'],
-            ),
-
-            const SizedBox(height: 12),
-
-            buildInfoCard(
-              icon: Icons.school_outlined,
-              title: 'SKS',
-              value: '${course['credits']} SKS',
-            ),
-
-            const SizedBox(height: 12),
-
-            buildInfoCard(
-              icon: Icons.check_circle_outline,
-              title: 'Status',
-              value: course['status'],
-            ),
-
-            const SizedBox(height: 24),
+            const SizedBox(height: 6),
 
             const Text(
-              'Deskripsi',
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+              studentId,
+              style: TextStyle(fontSize: 16, color: Colors.black54),
             ),
 
-            const SizedBox(height: 10),
+            const SizedBox(height: 30),
 
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(18),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.black12),
-              ),
+            const Align(
+              alignment: Alignment.centerLeft,
               child: Text(
-                course['description'],
-                style: const TextStyle(height: 1.5, fontSize: 15),
+                'Informasi Mahasiswa',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
-            ),
-
-            const SizedBox(height: 24),
-
-            // DATA MAHASISWA
-            const Text(
-              'Data Mahasiswa',
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
             ),
 
             const SizedBox(height: 12),
 
-            buildInfoCard(
-              icon: Icons.person_outline,
-              title: 'Nama',
+            const InfoCard(
+              icon: Icons.person,
+              title: 'Nama Lengkap',
               value: studentName,
             ),
 
             const SizedBox(height: 12),
 
-            buildInfoCard(
-              icon: Icons.badge_outlined,
-              title: 'NIM',
-              value: studentId,
-            ),
+            const InfoCard(icon: Icons.badge, title: 'NIM', value: studentId),
 
-            const SizedBox(height: 28),
+            const SizedBox(height: 12),
 
-            // =================================================
-            // TOMBOL PILIH / FAVORITE
-            // =================================================
-            SizedBox(
-              width: double.infinity,
-              height: 54,
-              child: ElevatedButton.icon(
-                onPressed: () {
-                  // Mengirim nilai TRUE ke halaman sebelumnya
-                  Navigator.pop(context, true);
-                },
-                icon: const Icon(Icons.favorite),
-                label: const Text(
-                  'Pilih / Favorite',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.black,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                ),
-              ),
+            const InfoCard(
+              icon: Icons.school,
+              title: 'Program Studi',
+              value: 'Pendidikan Teknik Informatika',
             ),
 
             const SizedBox(height: 12),
 
-            // TOMBOL KEMBALI BIASA
-            SizedBox(
-              width: double.infinity,
-              height: 50,
-              child: OutlinedButton.icon(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-                icon: const Icon(Icons.arrow_back),
-                label: const Text(
-                  'Kembali',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: Colors.black,
-                  side: const BorderSide(color: Colors.black),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 20),
-
-            const Center(
-              child: Text(
-                'Navigator.pop(context, true)',
-                style: TextStyle(
-                  color: Colors.grey,
-                  fontStyle: FontStyle.italic,
-                ),
-              ),
+            const InfoCard(
+              icon: Icons.business,
+              title: 'Universitas',
+              value: 'Universitas Pendidikan Ganesha',
             ),
           ],
         ),
       ),
     );
   }
+}
 
-  // =====================================================
-  // INFO CARD
-  // =====================================================
+// ============================================================
+// INFO CARD
+// ============================================================
 
-  static Widget buildInfoCard({
-    required IconData icon,
-    required String title,
-    required String value,
-  }) {
+class InfoCard extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String value;
+
+  const InfoCard({
+    super.key,
+    required this.icon,
+    required this.title,
+    required this.value,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(18),
         border: Border.all(color: Colors.black12),
       ),
       child: Row(
@@ -500,17 +472,80 @@ class CourseDetailPage extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: const TextStyle(color: Colors.grey, fontSize: 13),
+                  style: const TextStyle(fontSize: 13, color: Colors.black54),
                 ),
-
                 const SizedBox(height: 4),
-
                 Text(
                   value,
                   style: const TextStyle(
                     fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ============================================================
+// FEATURE CARD
+// ============================================================
+
+class FeatureCard extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String description;
+
+  const FeatureCard({
+    super.key,
+    required this.icon,
+    required this.title,
+    required this.description,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: Colors.black12),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 50,
+            height: 50,
+            decoration: BoxDecoration(
+              color: Colors.black,
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Icon(icon, color: Colors.white),
+          ),
+
+          const SizedBox(width: 14),
+
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 17,
                     fontWeight: FontWeight.bold,
                   ),
+                ),
+                const SizedBox(height: 5),
+                Text(
+                  description,
+                  style: const TextStyle(color: Colors.black54, height: 1.3),
                 ),
               ],
             ),
