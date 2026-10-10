@@ -22,37 +22,89 @@ class _MainPageState extends State<MainPage> {
 
   @override
   Widget build(BuildContext context) {
-    final provider = context.watch<CourseProvider>();
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isWide = constraints.maxWidth >= 700;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(selectedIndex == 0 ? 'Daftar Course' : 'Course Favorite'),
-        backgroundColor: Colors.black,
-        foregroundColor: Colors.white,
-      ),
-      body: selectedIndex == 0
-          ? _buildCourseList(provider)
-          : const FavoritesPage(),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: selectedIndex,
-        selectedItemColor: Colors.black,
-        onTap: (index) {
-          setState(() {
-            selectedIndex = index;
-          });
-        },
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.school), label: 'Courses'),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.favorite),
-            label: 'Favorites',
+        return Scaffold(
+          appBar: AppBar(
+            title: Text(
+              selectedIndex == 0 ? 'Course Explorer v2' : 'Favorites',
+            ),
+            backgroundColor: Colors.black,
+            foregroundColor: Colors.white,
           ),
-        ],
-      ),
+          body: isWide
+              ? Row(
+                  children: [
+                    NavigationRail(
+                      selectedIndex: selectedIndex,
+                      onDestinationSelected: (index) {
+                        setState(() {
+                          selectedIndex = index;
+                        });
+                      },
+                      labelType: NavigationRailLabelType.all,
+                      destinations: const [
+                        NavigationRailDestination(
+                          icon: Icon(Icons.school_outlined),
+                          selectedIcon: Icon(Icons.school),
+                          label: Text('Courses'),
+                        ),
+                        NavigationRailDestination(
+                          icon: Icon(Icons.favorite_border),
+                          selectedIcon: Icon(Icons.favorite),
+                          label: Text('Favorites'),
+                        ),
+                      ],
+                    ),
+                    const VerticalDivider(width: 1),
+                    Expanded(child: _buildSelectedPage()),
+                  ],
+                )
+              : _buildSelectedPage(),
+          bottomNavigationBar: isWide
+              ? null
+              : BottomNavigationBar(
+                  currentIndex: selectedIndex,
+                  selectedItemColor: Colors.black,
+                  onTap: (index) {
+                    setState(() {
+                      selectedIndex = index;
+                    });
+                  },
+                  items: const [
+                    BottomNavigationBarItem(
+                      icon: Icon(Icons.school),
+                      label: 'Courses',
+                    ),
+                    BottomNavigationBarItem(
+                      icon: Icon(Icons.favorite),
+                      label: 'Favorites',
+                    ),
+                  ],
+                ),
+        );
+      },
     );
   }
 
-  Widget _buildCourseList(CourseProvider provider) {
+  Widget _buildSelectedPage() {
+    if (selectedIndex == 1) {
+      return const FavoritesPage();
+    }
+
+    return const CourseListView();
+  }
+}
+
+class CourseListView extends StatelessWidget {
+  const CourseListView({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final provider = context.watch<CourseProvider>();
+
     if (provider.isLoading) {
       return const Center(
         child: CircularProgressIndicator(color: Colors.black),
@@ -69,7 +121,7 @@ class _MainPageState extends State<MainPage> {
               const Icon(Icons.error_outline, size: 48, color: Colors.red),
               const SizedBox(height: 12),
               Text(
-                'Gagal memuat course:\n${provider.error}',
+                'Gagal memuat data:\n${provider.error}',
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 12),
