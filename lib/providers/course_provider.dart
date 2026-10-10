@@ -40,7 +40,6 @@ class CourseProvider extends ChangeNotifier {
       favorites.add(code);
     }
 
-    // Memberi tahu widget bahwa state telah berubah.
     notifyListeners();
   }
 
