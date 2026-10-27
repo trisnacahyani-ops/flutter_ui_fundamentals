@@ -1,44 +1,46 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 
-import 'models/course.dart';
-
-const String apiUrl = 'https://course-api-pearl.vercel.app/courses';
-
-Future<List<Course>> fetchCourses() async {
-  final response = await http.get(Uri.parse(apiUrl));
-
-  if (response.statusCode == 200) {
-    final List<dynamic> data = jsonDecode(response.body) as List<dynamic>;
-
-    return data
-        .map((item) => Course.fromJson(item as Map<String, dynamic>))
-        .toList();
-  }
-
-  throw Exception('HTTP ${response.statusCode}');
-}
+import 'repositories/course_repository.dart';
+import 'services/course_api_service.dart';
 
 void main() {
-  runApp(
-    const MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: CourseModelTestPage(),
-    ),
-  );
+  const baseUrl = 'https://course-api-pearl.vercel.app';
+  final apiService = CourseApiService(baseUrl);
+  final repository = CourseRepository(apiService);
+
+  runApp(CourseExplorerApp(repository: repository));
 }
 
-class CourseModelTestPage extends StatefulWidget {
-  const CourseModelTestPage({super.key});
+class CourseExplorerApp extends StatelessWidget {
+  const CourseExplorerApp({super.key, required this.repository});
+
+  final CourseRepository repository;
 
   @override
-  State<CourseModelTestPage> createState() => _CourseModelTestPageState();
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      title: 'Course Explorer',
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
+        useMaterial3: true,
+      ),
+      home: CourseListPage(repository: repository),
+    );
+  }
 }
 
-class _CourseModelTestPageState extends State<CourseModelTestPage> {
-  List<Course> courses = [];
+class CourseListPage extends StatefulWidget {
+  const CourseListPage({super.key, required this.repository});
+
+  final CourseRepository repository;
+
+  @override
+  State<CourseListPage> createState() => _CourseListPageState();
+}
+
+class _CourseListPageState extends State<CourseListPage> {
+  List<dynamic> courses = [];
   String errorMessage = '';
   bool isLoading = true;
 
@@ -55,18 +57,13 @@ class _CourseModelTestPageState extends State<CourseModelTestPage> {
     });
 
     try {
-      final result = await fetchCourses();
+      final result = await widget.repository.getCourses();
 
       if (!mounted) return;
       setState(() {
         courses = result;
         isLoading = false;
       });
-
-      debugPrint('Jumlah data: ${courses.length}');
-      for (final course in courses.take(3)) {
-        debugPrint('${course.code} - ${course.title} - ${course.status}');
-      }
     } catch (error) {
       if (!mounted) return;
       setState(() {
@@ -95,7 +92,10 @@ class _CourseModelTestPageState extends State<CourseModelTestPage> {
           else if (errorMessage.isNotEmpty)
             Expanded(
               child: Center(
-                child: Text('Gagal mengambil data:\n$errorMessage'),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Text('Gagal mengambil data:\n$errorMessage'),
+                ),
               ),
             )
           else
