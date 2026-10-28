@@ -88,4 +88,29 @@ class CourseProvider with ChangeNotifier {
       notifyListeners();
     }
   }
+
+  // Fungsi Delete Course beserta pembersihan favorites (Tahap 8)
+  Future<void> deleteCourse(int id, String code) async {
+    _isSaving = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      await repository.deleteCourse(id);
+
+      // Hapus dari daftar favorite jika ada agar tidak menjadi data yatim
+      if (_favoriteCodes.contains(code)) {
+        _favoriteCodes.remove(code);
+      }
+
+      await loadCourses(); // Refresh daftar course
+    } catch (e) {
+      _error = e.toString();
+      notifyListeners();
+      rethrow;
+    } finally {
+      _isSaving = false;
+      notifyListeners();
+    }
+  }
 }
