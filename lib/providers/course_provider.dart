@@ -3,10 +3,9 @@ import 'package:flutter/foundation.dart';
 import '../models/course.dart';
 import '../repositories/course_repository.dart';
 
-class CourseProvider extends ChangeNotifier {
-  CourseProvider(this._repository);
-
-  final CourseRepository _repository;
+class CourseProvider with ChangeNotifier {
+  CourseProvider(this.repository);
+  final CourseRepository repository;
 
   List<Course> _courses = [];
   final Set<String> _favoriteCodes = {};
@@ -15,19 +14,16 @@ class CourseProvider extends ChangeNotifier {
   bool _isSaving = false;
   String? _error;
 
-  // State data course
   List<Course> get courses => _courses;
   bool get isLoading => _isLoading;
+  bool get isSaving => _isSaving;
   String? get error => _error;
 
-  // State penyimpanan course
-  bool get isSaving => _isSaving;
-
-  // State favorite
-  List<Course> get favoriteCourses =>
-      _courses.where((course) => _favoriteCodes.contains(course.code)).toList();
-
-  List<Course> get favorites => favoriteCourses;
+  List<Course> get favoriteCourses {
+    return _courses
+        .where((course) => _favoriteCodes.contains(course.code))
+        .toList();
+  }
 
   bool isFavorite(String code) {
     return _favoriteCodes.contains(code);
@@ -39,18 +35,16 @@ class CourseProvider extends ChangeNotifier {
     } else {
       _favoriteCodes.add(code);
     }
-
     notifyListeners();
   }
 
-  // Mengambil data course melalui repository
   Future<void> loadCourses() async {
     _isLoading = true;
     _error = null;
     notifyListeners();
 
     try {
-      _courses = await _repository.getCourses();
+      _courses = await repository.getCourses();
     } catch (e) {
       _error = e.toString();
     } finally {
@@ -59,29 +53,36 @@ class CourseProvider extends ChangeNotifier {
     }
   }
 
-  // Membuat course melalui repository
-  Future<Course> createCourse(Course course) async {
-    if (_isSaving) {
-      throw Exception('Penyimpanan course sedang berlangsung.');
-    }
-
+  Future<void> createCourse(Course course) async {
     _isSaving = true;
+    _error = null;
     notifyListeners();
 
     try {
-      final createdCourse = await _repository.createCourse(course);
-
-      // Muat ulang daftar dari server setelah POST berhasil.
+      await repository.createCourse(course);
       await loadCourses();
+    } catch (e) {
+      _error = e.toString();
+      notifyListeners();
+      rethrow;
+    } finally {
+      _isSaving = false;
+      notifyListeners();
+    }
+  }
 
-      // Jangan menyatakan berhasil jika proses refresh gagal.
-      if (_error != null) {
-        throw Exception(
-          'Course terkirim, tetapi daftar gagal dimuat ulang: $_error',
-        );
-      }
+  Future<void> updateCourse(int id, Course course) async {
+    _isSaving = true;
+    _error = null;
+    notifyListeners();
 
-      return createdCourse;
+    try {
+      await repository.updateCourse(id, course);
+      await loadCourses();
+    } catch (e) {
+      _error = e.toString();
+      notifyListeners();
+      rethrow;
     } finally {
       _isSaving = false;
       notifyListeners();
