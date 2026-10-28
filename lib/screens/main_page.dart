@@ -5,6 +5,7 @@ import '../models/course.dart';
 import '../providers/course_provider.dart';
 import '../widgets/course_card.dart';
 import '../widgets/error_view.dart';
+import 'add_course_page.dart';
 import 'detail_page.dart';
 
 class MainPage extends StatelessWidget {
@@ -19,6 +20,16 @@ class MainPage extends StatelessWidget {
         title: const Text('Course Explorer'),
         centerTitle: true,
         actions: [
+          IconButton(
+            tooltip: 'Tambah course',
+            icon: const Icon(Icons.add),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const AddCoursePage()),
+              );
+            },
+          ),
           IconButton(
             tooltip: 'Muat ulang',
             icon: const Icon(Icons.refresh),
@@ -43,31 +54,18 @@ class MainPage extends StatelessWidget {
   }
 
   Widget _buildContent(BuildContext context, CourseProvider provider) {
-    // 1. Loading state
     if (provider.isLoading && provider.courses.isEmpty) {
       return const Center(child: CircularProgressIndicator());
     }
 
-    // 2. Error state
     if (provider.error != null && provider.courses.isEmpty) {
       return ErrorView(message: provider.error!, onRetry: provider.loadCourses);
     }
 
-    // 3. Empty state
     if (provider.courses.isEmpty) {
-      return const Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.inbox_outlined, size: 56),
-            SizedBox(height: 12),
-            Text('Data course belum tersedia'),
-          ],
-        ),
-      );
+      return const Center(child: Text('Data course belum tersedia'));
     }
 
-    // 4. Success state
     return RefreshIndicator(
       onRefresh: provider.loadCourses,
       child: ListView.builder(

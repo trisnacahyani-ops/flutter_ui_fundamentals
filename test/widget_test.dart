@@ -11,10 +11,8 @@ void main() {
 
     await tester.pumpWidget(CourseExplorerApp(repository: repository));
 
-    // Tunggu satu frame agar tampilan awal muncul.
-    await tester.pump();
-
     expect(find.text('Ni Komang Trisna Cahyani'), findsOneWidget);
+
     expect(find.text('NIM: 2415051072'), findsOneWidget);
   });
 }

@@ -12,6 +12,7 @@ class CourseProvider extends ChangeNotifier {
   final Set<String> _favoriteCodes = {};
 
   bool _isLoading = false;
+  bool _isSaving = false;
   String? _error;
 
   // State data course
@@ -19,7 +20,10 @@ class CourseProvider extends ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get error => _error;
 
-  // State daftar favorit
+  // State penyimpanan course
+  bool get isSaving => _isSaving;
+
+  // State favorite
   List<Course> get favoriteCourses =>
       _courses.where((course) => _favoriteCodes.contains(course.code)).toList();
 
@@ -39,10 +43,8 @@ class CourseProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Memuat data dari repository
+  // Mengambil data course melalui repository
   Future<void> loadCourses() async {
-    if (_isLoading) return;
-
     _isLoading = true;
     _error = null;
     notifyListeners();
@@ -53,6 +55,35 @@ class CourseProvider extends ChangeNotifier {
       _error = e.toString();
     } finally {
       _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  // Membuat course melalui repository
+  Future<Course> createCourse(Course course) async {
+    if (_isSaving) {
+      throw Exception('Penyimpanan course sedang berlangsung.');
+    }
+
+    _isSaving = true;
+    notifyListeners();
+
+    try {
+      final createdCourse = await _repository.createCourse(course);
+
+      // Muat ulang daftar dari server setelah POST berhasil.
+      await loadCourses();
+
+      // Jangan menyatakan berhasil jika proses refresh gagal.
+      if (_error != null) {
+        throw Exception(
+          'Course terkirim, tetapi daftar gagal dimuat ulang: $_error',
+        );
+      }
+
+      return createdCourse;
+    } finally {
+      _isSaving = false;
       notifyListeners();
     }
   }

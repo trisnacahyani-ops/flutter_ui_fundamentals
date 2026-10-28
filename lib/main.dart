@@ -7,15 +7,17 @@ import 'screens/main_page.dart';
 import 'services/course_api_service.dart';
 
 void main() {
-  final repository = CourseRepository(CourseApiService());
+  final repository = CourseRepository(
+    CourseApiService(baseUrl: 'https://course-api-pearl.vercel.app'),
+  );
 
   runApp(CourseExplorerApp(repository: repository));
 }
 
 class CourseExplorerApp extends StatelessWidget {
-  const CourseExplorerApp({super.key, required this.repository});
-
   final CourseRepository repository;
+
+  const CourseExplorerApp({super.key, required this.repository});
 
   @override
   Widget build(BuildContext context) {
