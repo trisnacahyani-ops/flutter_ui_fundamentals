@@ -3,13 +3,13 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 import '../models/course.dart';
+import 'course_data_source.dart';
 
-class CourseApiService {
-  CourseApiService({String? baseUrl})
-    : baseUrl = baseUrl ?? 'https://course-api-pearl.vercel.app';
-
+class CourseApiService implements CourseDataSource {
+  CourseApiService(this.baseUrl);
   final String baseUrl;
 
+  @override
   Future<List<Course>> getCourses() async {
     final response = await http.get(Uri.parse('$baseUrl/courses'));
 
@@ -23,6 +23,7 @@ class CourseApiService {
     }).toList();
   }
 
+  @override
   Future<Course> createCourse(Course course) async {
     final response = await http.post(
       Uri.parse('$baseUrl/courses'),
@@ -36,6 +37,7 @@ class CourseApiService {
     throw Exception('Gagal membuat course. HTTP ${response.statusCode}');
   }
 
+  @override
   Future<void> updateCourse(int id, Course course) async {
     final response = await http.put(
       Uri.parse('$baseUrl/courses/$id'),
@@ -48,7 +50,7 @@ class CourseApiService {
     }
   }
 
-  // DELETE: Menghapus course berdasarkan ID (Tahap 8)
+  @override
   Future<void> deleteCourse(int id) async {
     final response = await http.delete(Uri.parse('$baseUrl/courses/$id'));
 
