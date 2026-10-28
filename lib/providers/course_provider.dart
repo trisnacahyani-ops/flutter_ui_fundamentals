@@ -4,46 +4,56 @@ import '../models/course.dart';
 import '../repositories/course_repository.dart';
 
 class CourseProvider extends ChangeNotifier {
-  final CourseRepository repository;
+  CourseProvider(this._repository);
 
-  CourseProvider(this.repository);
+  final CourseRepository _repository;
 
-  List<Course> courses = [];
-  final Set<String> favorites = {};
+  List<Course> _courses = [];
+  final Set<String> _favoriteCodes = {};
 
-  bool isLoading = false;
-  String? error;
+  bool _isLoading = false;
+  String? _error;
 
-  Future<void> loadCourses() async {
-    isLoading = true;
-    error = null;
-    notifyListeners();
+  // State data course
+  List<Course> get courses => _courses;
+  bool get isLoading => _isLoading;
+  String? get error => _error;
 
-    try {
-      courses = await repository.getCourses();
-    } catch (e) {
-      error = e.toString();
-    } finally {
-      isLoading = false;
-      notifyListeners();
-    }
-  }
+  // State daftar favorit
+  List<Course> get favoriteCourses =>
+      _courses.where((course) => _favoriteCodes.contains(course.code)).toList();
+
+  List<Course> get favorites => favoriteCourses;
 
   bool isFavorite(String code) {
-    return favorites.contains(code);
+    return _favoriteCodes.contains(code);
   }
 
   void toggleFavorite(String code) {
-    if (favorites.contains(code)) {
-      favorites.remove(code);
+    if (_favoriteCodes.contains(code)) {
+      _favoriteCodes.remove(code);
     } else {
-      favorites.add(code);
+      _favoriteCodes.add(code);
     }
 
     notifyListeners();
   }
 
-  List<Course> get favoriteCourses {
-    return courses.where((course) => favorites.contains(course.code)).toList();
+  // Memuat data dari repository
+  Future<void> loadCourses() async {
+    if (_isLoading) return;
+
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      _courses = await _repository.getCourses();
+    } catch (e) {
+      _error = e.toString();
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
   }
 }

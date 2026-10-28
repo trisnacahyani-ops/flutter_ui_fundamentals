@@ -6,11 +6,12 @@ import 'package:course_explorer_v2/services/course_api_service.dart';
 void main() {
   testWidgets('Menampilkan identitas mahasiswa', (tester) async {
     final repository = CourseRepository(
-      CourseApiService('https://course-api-pearl.vercel.app'),
+      CourseApiService(baseUrl: 'https://course-api-pearl.vercel.app'),
     );
 
     await tester.pumpWidget(CourseExplorerApp(repository: repository));
 
+    // Tunggu satu frame agar tampilan awal muncul.
     await tester.pump();
 
     expect(find.text('Ni Komang Trisna Cahyani'), findsOneWidget);

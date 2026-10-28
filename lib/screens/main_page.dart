@@ -1,182 +1,96 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../models/course.dart';
 import '../providers/course_provider.dart';
 import '../widgets/course_card.dart';
-import '../widgets/student_identity_card.dart';
+import '../widgets/error_view.dart';
 import 'detail_page.dart';
-import 'favorites_page.dart';
 
-const String studentName = 'Ni Komang Trisna Cahyani';
-const String studentId = '2415051072';
-
-class MainPage extends StatefulWidget {
+class MainPage extends StatelessWidget {
   const MainPage({super.key});
-
-  @override
-  State<MainPage> createState() => _MainPageState();
-}
-
-class _MainPageState extends State<MainPage> {
-  int selectedIndex = 0;
-
-  @override
-  Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final isWide = constraints.maxWidth >= 700;
-
-        return Scaffold(
-          appBar: AppBar(
-            title: Text(
-              selectedIndex == 0 ? 'Course Explorer v2' : 'Favorites',
-            ),
-            backgroundColor: Colors.black,
-            foregroundColor: Colors.white,
-          ),
-          body: isWide
-              ? Row(
-                  children: [
-                    NavigationRail(
-                      selectedIndex: selectedIndex,
-                      onDestinationSelected: (index) {
-                        setState(() {
-                          selectedIndex = index;
-                        });
-                      },
-                      labelType: NavigationRailLabelType.all,
-                      destinations: const [
-                        NavigationRailDestination(
-                          icon: Icon(Icons.school_outlined),
-                          selectedIcon: Icon(Icons.school),
-                          label: Text('Courses'),
-                        ),
-                        NavigationRailDestination(
-                          icon: Icon(Icons.favorite_border),
-                          selectedIcon: Icon(Icons.favorite),
-                          label: Text('Favorites'),
-                        ),
-                      ],
-                    ),
-                    const VerticalDivider(width: 1),
-                    Expanded(child: _buildSelectedPage()),
-                  ],
-                )
-              : _buildSelectedPage(),
-          bottomNavigationBar: isWide
-              ? null
-              : BottomNavigationBar(
-                  currentIndex: selectedIndex,
-                  selectedItemColor: Colors.black,
-                  onTap: (index) {
-                    setState(() {
-                      selectedIndex = index;
-                    });
-                  },
-                  items: const [
-                    BottomNavigationBarItem(
-                      icon: Icon(Icons.school),
-                      label: 'Courses',
-                    ),
-                    BottomNavigationBarItem(
-                      icon: Icon(Icons.favorite),
-                      label: 'Favorites',
-                    ),
-                  ],
-                ),
-        );
-      },
-    );
-  }
-
-  Widget _buildSelectedPage() {
-    if (selectedIndex == 1) {
-      return const FavoritesPage();
-    }
-
-    return const CourseListView();
-  }
-}
-
-class CourseListView extends StatelessWidget {
-  const CourseListView({super.key});
 
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<CourseProvider>();
 
-    if (provider.isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(color: Colors.black),
-      );
-    }
-
-    if (provider.error != null) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.error_outline, size: 48, color: Colors.red),
-              const SizedBox(height: 12),
-              Text(
-                'Gagal memuat data:\n${provider.error}',
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 12),
-              ElevatedButton(
-                onPressed: () {
-                  context.read<CourseProvider>().loadCourses();
-                },
-                child: const Text('Coba Lagi'),
-              ),
-            ],
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Course Explorer'),
+        centerTitle: true,
+        actions: [
+          IconButton(
+            tooltip: 'Muat ulang',
+            icon: const Icon(Icons.refresh),
+            onPressed: provider.isLoading ? null : provider.loadCourses,
           ),
-        ),
-      );
-    }
-
-    return ListView(
-      padding: const EdgeInsets.all(16),
-      children: [
-        const StudentIdentityCard(name: studentName, id: studentId),
-        const SizedBox(height: 24),
-        const Text(
-          'Daftar Course',
-          style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 12),
-        if (provider.courses.isEmpty)
-          const Text('Belum ada data course.')
-        else
-          ...provider.courses.map((course) {
-            return CourseCard(
-              course: course,
-              isFavorite: provider.isFavorite(course.code),
-              onFavoritePressed: () {
-                context.read<CourseProvider>().toggleFavorite(course.code);
-              },
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => DetailPage(course: course)),
-                );
-              },
-            );
-          }),
-        const SizedBox(height: 12),
-        Card(
-          color: Colors.black,
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Text(
-              'Total favorite: ${provider.favorites.length}',
-              style: const TextStyle(color: Colors.white, fontSize: 16),
+        ],
+      ),
+      body: Column(
+        children: [
+          const Card(
+            margin: EdgeInsets.all(12),
+            child: ListTile(
+              leading: Icon(Icons.person),
+              title: Text('Ni Komang Trisna Cahyani'),
+              subtitle: Text('NIM: 2415051072'),
             ),
           ),
+          Expanded(child: _buildContent(context, provider)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildContent(BuildContext context, CourseProvider provider) {
+    // 1. Loading state
+    if (provider.isLoading && provider.courses.isEmpty) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    // 2. Error state
+    if (provider.error != null && provider.courses.isEmpty) {
+      return ErrorView(message: provider.error!, onRetry: provider.loadCourses);
+    }
+
+    // 3. Empty state
+    if (provider.courses.isEmpty) {
+      return const Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.inbox_outlined, size: 56),
+            SizedBox(height: 12),
+            Text('Data course belum tersedia'),
+          ],
         ),
-      ],
+      );
+    }
+
+    // 4. Success state
+    return RefreshIndicator(
+      onRefresh: provider.loadCourses,
+      child: ListView.builder(
+        padding: const EdgeInsets.all(12),
+        itemCount: provider.courses.length,
+        itemBuilder: (context, index) {
+          final Course course = provider.courses[index];
+
+          return CourseCard(
+            course: course,
+            isFavorite: provider.isFavorite(course.code),
+            onFavoritePressed: () {
+              provider.toggleFavorite(course.code);
+            },
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => DetailPage(course: course)),
+              );
+            },
+          );
+        },
+      ),
     );
   }
 }

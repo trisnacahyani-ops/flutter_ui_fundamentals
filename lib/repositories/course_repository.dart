@@ -2,11 +2,11 @@ import '../models/course.dart';
 import '../services/course_api_service.dart';
 
 class CourseRepository {
-  CourseRepository(this._apiService);
+  CourseRepository(this.service);
 
-  final CourseApiService _apiService;
+  final CourseApiService service;
 
   Future<List<Course>> getCourses() {
-    return _apiService.getCourses();
+    return service.getCourses();
   }
 }
