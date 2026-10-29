@@ -137,3 +137,39 @@ Setiap objek course memiliki field `id`, `code`, `title`, `credits`, `status`, d
 
 - **Screenshot Kode / Editor:** Dokumentasi endpoint dan field JSON pada README.md.
 - **Screenshot Hasil / Emulator atau Device:** Tampilan response JSON dari browser atau Postman.
+
+# Course Data Manager
+
+## Deskripsi
+Course Data Manager merupakan aplikasi Flutter untuk mengelola data mata kuliah (course). Aplikasi ini dikembangkan dari Course Explorer v2 dan menggunakan Supabase sebagai backend database.
+
+## Fitur
+- Menampilkan daftar mata kuliah dari Supabase.
+- Menambahkan mata kuliah.
+- Mengedit data mata kuliah.
+- Menghapus mata kuliah dengan konfirmasi.
+- Menandai mata kuliah sebagai favorit.
+- Menampilkan detail mata kuliah.
+- Menampilkan loading state, empty state, error state, dan tombol coba lagi.
+- Menampilkan identitas mahasiswa.
+
+## Teknologi
+- Flutter dan Dart
+- Provider untuk state management
+- Supabase sebagai backend database
+- Repository pattern untuk pemisahan akses data
+
+## Arsitektur
+Model → Data Source / Service → Repository → Provider → Screen / UI.
+
+Pemilihan data source dilakukan melalui konfigurasi aplikasi pada `lib/main.dart`.
+
+## Cara Menjalankan
+1. Pastikan Flutter dan Android Studio sudah terpasang.
+2. Jalankan `flutter pub get`.
+3. Pastikan konfigurasi Supabase sudah benar.
+4. Jalankan `flutter run -d chrome` untuk menjalankan aplikasi melalui Chrome.
+
+## Identitas Mahasiswa
+Nama: Ni Komang Trisna Cahyani  
+NIM: 2415051072
