@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../models/course.dart';
 import '../providers/course_provider.dart';
+import 'course_form_page.dart';
 
 class DetailPage extends StatelessWidget {
   final Course course;
@@ -12,13 +13,37 @@ class DetailPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<CourseProvider>();
-    final isFavorite = provider.isFavorite(course.code);
+
+    final currentCourse = provider.courses.firstWhere(
+      (item) => item.id == course.id,
+      orElse: () => course,
+    );
+
+    final isFavorite = provider.isFavorite(currentCourse.code);
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Detail Course'),
         backgroundColor: Colors.black,
         foregroundColor: Colors.white,
+        actions: [
+          IconButton(
+            tooltip: 'Edit Course',
+            icon: const Icon(Icons.edit),
+            onPressed: () async {
+              await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => CourseFormPage(course: currentCourse),
+                ),
+              );
+
+              if (!context.mounted) return;
+
+              await context.read<CourseProvider>().loadCourses();
+            },
+          ),
+        ],
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
@@ -31,7 +56,10 @@ class DetailPage extends StatelessWidget {
                 children: [
                   Text(
                     'Identitas Mahasiswa',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   SizedBox(height: 8),
                   Text('Nama: Ni Komang Trisna Cahyani'),
@@ -44,9 +72,12 @@ class DetailPage extends StatelessWidget {
           const Icon(Icons.school, size: 80, color: Colors.black),
           const SizedBox(height: 16),
           Text(
-            course.title,
+            currentCourse.title,
             textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            style: const TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+            ),
           ),
           const SizedBox(height: 24),
           Card(
@@ -54,17 +85,17 @@ class DetailPage extends StatelessWidget {
               children: [
                 ListTile(
                   title: const Text('Kode Course'),
-                  subtitle: Text(course.code),
+                  subtitle: Text(currentCourse.code),
                 ),
                 const Divider(height: 1),
                 ListTile(
                   title: const Text('Jumlah SKS'),
-                  subtitle: Text('${course.credits} SKS'),
+                  subtitle: Text('${currentCourse.credits} SKS'),
                 ),
                 const Divider(height: 1),
                 ListTile(
                   title: const Text('Status'),
-                  subtitle: Text(course.status),
+                  subtitle: Text(currentCourse.status),
                 ),
               ],
             ),
@@ -76,8 +107,32 @@ class DetailPage extends StatelessWidget {
               foregroundColor: Colors.white,
               padding: const EdgeInsets.all(16),
             ),
+            onPressed: () async {
+              await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => CourseFormPage(course: currentCourse),
+                ),
+              );
+
+              if (!context.mounted) return;
+
+              await context.read<CourseProvider>().loadCourses();
+            },
+            icon: const Icon(Icons.edit),
+            label: const Text('Edit Course'),
+          ),
+          const SizedBox(height: 12),
+          ElevatedButton.icon(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.black,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.all(16),
+            ),
             onPressed: () {
-              context.read<CourseProvider>().toggleFavorite(course.code);
+              context.read<CourseProvider>().toggleFavorite(
+                    currentCourse.code,
+                  );
             },
             icon: Icon(
               isFavorite ? Icons.favorite : Icons.favorite_border,
