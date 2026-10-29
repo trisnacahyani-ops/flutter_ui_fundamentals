@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../models/course.dart';
@@ -9,6 +9,68 @@ class DetailPage extends StatelessWidget {
   final Course course;
 
   const DetailPage({super.key, required this.course});
+
+  Future<void> _confirmDelete(
+    BuildContext context,
+    Course currentCourse,
+  ) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Hapus Course?'),
+        content: Text(
+          'Apakah kamu yakin ingin menghapus '
+          '"${currentCourse.title}"? Data yang dihapus tidak dapat '
+          'dikembalikan.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Batal'),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+            ),
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: const Text('Hapus'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !context.mounted) return;
+
+    final id = currentCourse.id;
+    if (id == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('ID course tidak ditemukan.')),
+      );
+      return;
+    }
+
+    try {
+      await context.read<CourseProvider>().deleteCourse(
+        id,
+        currentCourse.code,
+      );
+
+      if (!context.mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Course berhasil dihapus.')),
+      );
+
+      Navigator.pop(context);
+    } catch (e) {
+      if (!context.mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Gagal menghapus course: $e')),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -39,7 +101,6 @@ class DetailPage extends StatelessWidget {
               );
 
               if (!context.mounted) return;
-
               await context.read<CourseProvider>().loadCourses();
             },
           ),
@@ -49,23 +110,10 @@ class DetailPage extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         children: [
           const Card(
-            child: Padding(
-              padding: EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Identitas Mahasiswa',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  SizedBox(height: 8),
-                  Text('Nama: Ni Komang Trisna Cahyani'),
-                  Text('NIM: 2415051072'),
-                ],
-              ),
+            child: ListTile(
+              leading: Icon(Icons.person),
+              title: Text('Ni Komang Trisna Cahyani'),
+              subtitle: Text('NIM: 2415051072'),
             ),
           ),
           const SizedBox(height: 16),
@@ -102,11 +150,6 @@ class DetailPage extends StatelessWidget {
           ),
           const SizedBox(height: 24),
           ElevatedButton.icon(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.black,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.all(16),
-            ),
             onPressed: () async {
               await Navigator.push(
                 context,
@@ -116,7 +159,6 @@ class DetailPage extends StatelessWidget {
               );
 
               if (!context.mounted) return;
-
               await context.read<CourseProvider>().loadCourses();
             },
             icon: const Icon(Icons.edit),
@@ -124,15 +166,10 @@ class DetailPage extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           ElevatedButton.icon(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.black,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.all(16),
-            ),
             onPressed: () {
               context.read<CourseProvider>().toggleFavorite(
-                    currentCourse.code,
-                  );
+                currentCourse.code,
+              );
             },
             icon: Icon(
               isFavorite ? Icons.favorite : Icons.favorite_border,
@@ -141,14 +178,22 @@ class DetailPage extends StatelessWidget {
             label: Text(
               isFavorite ? 'Hapus dari Favorite' : 'Tambahkan ke Favorite',
             ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.black,
+              foregroundColor: Colors.white,
+            ),
           ),
           const SizedBox(height: 12),
-          Center(
-            child: Text(
-              isFavorite
-                  ? 'Course ini sudah menjadi favorite.'
-                  : 'Course ini belum menjadi favorite.',
-              textAlign: TextAlign.center,
+          ElevatedButton.icon(
+            onPressed: provider.isSaving
+                ? null
+                : () => _confirmDelete(context, currentCourse),
+            icon: const Icon(Icons.delete),
+            label: const Text('Hapus Course'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.all(16),
             ),
           ),
         ],
