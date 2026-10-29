@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../models/course.dart';
@@ -51,24 +51,20 @@ class DetailPage extends StatelessWidget {
     }
 
     try {
-      await context.read<CourseProvider>().deleteCourse(
-        id,
-        currentCourse.code,
-      );
+      await context.read<CourseProvider>().deleteCourse(id, currentCourse.code);
 
       if (!context.mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Course berhasil dihapus.')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Course berhasil dihapus.')));
 
       Navigator.pop(context);
     } catch (e) {
       if (!context.mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Gagal menghapus course: $e')),
-      );
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Gagal menghapus course: $e')));
     }
   }
 
@@ -122,10 +118,7 @@ class DetailPage extends StatelessWidget {
           Text(
             currentCourse.title,
             textAlign: TextAlign.center,
-            style: const TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
+            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 24),
           Card(
@@ -167,9 +160,7 @@ class DetailPage extends StatelessWidget {
           const SizedBox(height: 12),
           ElevatedButton.icon(
             onPressed: () {
-              context.read<CourseProvider>().toggleFavorite(
-                currentCourse.code,
-              );
+              context.read<CourseProvider>().toggleFavorite(currentCourse.code);
             },
             icon: Icon(
               isFavorite ? Icons.favorite : Icons.favorite_border,
