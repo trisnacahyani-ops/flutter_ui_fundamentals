@@ -7,7 +7,7 @@ import '../providers/course_provider.dart';
 class CourseFormPage extends StatefulWidget {
   final Course? course;
 
-  // course null = tambah, course berisi data = edit
+  // course null = tambah, course berisi data = edit.
   const CourseFormPage({super.key, this.course});
 
   @override
@@ -17,9 +17,9 @@ class CourseFormPage extends StatefulWidget {
 class _CourseFormPageState extends State<CourseFormPage> {
   final _formKey = GlobalKey<FormState>();
 
-  late TextEditingController _codeController;
-  late TextEditingController _titleController;
-  late TextEditingController _creditsController;
+  late final TextEditingController _codeController;
+  late final TextEditingController _titleController;
+  late final TextEditingController _creditsController;
 
   String _status = 'planned';
 
@@ -48,7 +48,9 @@ class _CourseFormPageState extends State<CourseFormPage> {
     if (!_formKey.currentState!.validate()) return;
 
     final provider = context.read<CourseProvider>();
-    final credits = int.tryParse(_creditsController.text) ?? 0;
+    final credits = int.tryParse(_creditsController.text.trim());
+
+    if (credits == null || credits <= 0) return;
 
     final courseToSave = Course(
       id: widget.course?.id,
@@ -58,20 +60,10 @@ class _CourseFormPageState extends State<CourseFormPage> {
       status: _status,
     );
 
-    try {
-      if (widget.course == null) {
-        // Logika tambah course belum diaktifkan.
-        // Tambahkan pemanggilan provider create di sini
-        // jika fitur tambah sudah tersedia di CourseProvider.
-        if (!mounted) return;
+    final isEditing = widget.course != null;
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Fitur tambah course belum diaktifkan.'),
-          ),
-        );
-        return;
-      } else {
+    try {
+      if (isEditing) {
         final courseId = widget.course!.id;
 
         if (courseId == null) {
@@ -79,13 +71,20 @@ class _CourseFormPageState extends State<CourseFormPage> {
         }
 
         await provider.updateCourse(courseId, courseToSave);
+      } else {
+        await provider.createCourse(courseToSave);
       }
 
-      // Pastikan halaman masih aktif setelah proses asynchronous.
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Course berhasil diperbarui!')),
+        SnackBar(
+          content: Text(
+            isEditing
+                ? 'Course berhasil diperbarui!'
+                : 'Course berhasil ditambahkan!',
+          ),
+        ),
       );
 
       Navigator.pop(context);
@@ -93,7 +92,7 @@ class _CourseFormPageState extends State<CourseFormPage> {
       if (!mounted) return;
 
       ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('Gagal menyimpan: $e')));
+          .showSnackBar(SnackBar(content: Text('Gagal menyimpan course: $e')));
     }
   }
 
@@ -104,108 +103,118 @@ class _CourseFormPageState extends State<CourseFormPage> {
 
     return Scaffold(
       appBar: AppBar(title: Text(isEditing ? 'Edit Course' : 'Tambah Course')),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: ListView(
-            children: [
-              const Text(
-                'Ni Komang Trisna Cahyani • 2415051072',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: Colors.blueGrey,
-                  fontSize: 14,
-                ),
-              ),
-              const SizedBox(height: 20),
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 600),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Form(
+              key: _formKey,
+              child: ListView(
+                children: [
+                  const Card(
+                    child: ListTile(
+                      leading: Icon(Icons.person),
+                      title: Text('Ni Komang Trisna Cahyani'),
+                      subtitle: Text('NIM: 2415051072'),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
 
-              // Kode course tidak dapat diubah saat mode edit.
-              TextFormField(
-                controller: _codeController,
-                decoration: const InputDecoration(
-                  labelText: 'Kode Course',
-                  border: OutlineInputBorder(),
-                ),
-                readOnly: isEditing,
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Kode wajib diisi';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _codeController,
+                    readOnly: isEditing,
+                    decoration: const InputDecoration(
+                      labelText: 'Kode Course',
+                      border: OutlineInputBorder(),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return 'Kode wajib diisi';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
 
-              TextFormField(
-                controller: _titleController,
-                decoration: const InputDecoration(
-                  labelText: 'Judul Course',
-                  border: OutlineInputBorder(),
-                ),
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Judul wajib diisi';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _titleController,
+                    decoration: const InputDecoration(
+                      labelText: 'Judul Course',
+                      border: OutlineInputBorder(),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return 'Judul wajib diisi';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
 
-              TextFormField(
-                controller: _creditsController,
-                decoration: const InputDecoration(
-                  labelText: 'Jumlah SKS',
-                  border: OutlineInputBorder(),
-                ),
-                keyboardType: TextInputType.number,
-                validator: (value) {
-                  final credits = int.tryParse(value ?? '');
+                  TextFormField(
+                    controller: _creditsController,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(
+                      labelText: 'Jumlah SKS',
+                      border: OutlineInputBorder(),
+                    ),
+                    validator: (value) {
+                      final credits = int.tryParse(value?.trim() ?? '');
 
-                  if (credits == null || credits <= 0) {
-                    return 'Masukkan jumlah SKS yang valid';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
+                      if (credits == null || credits <= 0) {
+                        return 'Masukkan jumlah SKS yang valid';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
 
-              DropdownButtonFormField<String>(
-                initialValue: _status,
-                decoration: const InputDecoration(
-                  labelText: 'Status Course',
-                  border: OutlineInputBorder(),
-                ),
-                items: const [
-                  DropdownMenuItem(value: 'planned', child: Text('Planned')),
-                  DropdownMenuItem(value: 'active', child: Text('Active')),
-                  DropdownMenuItem(value: 'done', child: Text('Done')),
-                ],
-                onChanged: (value) {
-                  setState(() {
-                    _status = value ?? 'planned';
-                  });
-                },
-              ),
-              const SizedBox(height: 24),
-
-              ElevatedButton(
-                onPressed: provider.isSaving ? null : _saveForm,
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                ),
-                child: provider.isSaving
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : Text(
-                        isEditing ? 'Simpan Perubahan' : 'Tambah Course',
-                        style: const TextStyle(fontSize: 16),
+                  DropdownButtonFormField<String>(
+                    initialValue: _status,
+                    decoration: const InputDecoration(
+                      labelText: 'Status Course',
+                      border: OutlineInputBorder(),
+                    ),
+                    items: const [
+                      DropdownMenuItem(
+                        value: 'planned',
+                        child: Text('Planned'),
                       ),
+                      DropdownMenuItem(value: 'active', child: Text('Active')),
+                      DropdownMenuItem(value: 'done', child: Text('Done')),
+                    ],
+                    onChanged: (value) {
+                      setState(() {
+                        _status = value ?? 'planned';
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 24),
+
+                  ElevatedButton.icon(
+                    onPressed: provider.isSaving ? null : _saveForm,
+                    icon: provider.isSaving
+                        ? const SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : Icon(isEditing ? Icons.save : Icons.add),
+                    label: Text(
+                      provider.isSaving
+                          ? 'Menyimpan...'
+                          : isEditing
+                          ? 'Simpan Perubahan'
+                          : 'Tambah Course',
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                    ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),
