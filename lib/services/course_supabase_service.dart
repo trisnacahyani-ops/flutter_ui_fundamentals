@@ -15,38 +15,28 @@ class CourseSupabaseService implements CourseDataSource {
         .order('id', ascending: true);
 
     return (response as List<dynamic>)
-        .map((item) => Course.fromJson(
-              Map<String, dynamic>.from(item as Map),
-            ))
+        .map((item) => Course.fromJson(Map<String, dynamic>.from(item as Map)))
         .toList();
   }
 
   @override
   Future<Course> createCourse(Course course) async {
-    final response = await _client
+    final row = await _client
         .from(_tableName)
         .insert(course.toJson())
         .select()
         .single();
 
-    return Course.fromJson(
-      Map<String, dynamic>.from(response),
-    );
+    return Course.fromJson(Map<String, dynamic>.from(row));
   }
 
   @override
   Future<void> updateCourse(int id, Course course) async {
-    await _client
-        .from(_tableName)
-        .update(course.toJson())
-        .eq('id', id);
+    await _client.from(_tableName).update(course.toJson()).eq('id', id);
   }
 
   @override
   Future<void> deleteCourse(int id) async {
-    await _client
-        .from(_tableName)
-        .delete()
-        .eq('id', id);
+    await _client.from(_tableName).delete().eq('id', id);
   }
 }
