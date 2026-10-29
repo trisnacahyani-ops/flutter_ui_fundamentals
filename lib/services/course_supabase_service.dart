@@ -1,4 +1,4 @@
-import 'package:supabase_flutter/supabase_flutter.dart';
+﻿import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../models/course.dart';
 import 'course_data_source.dart';
@@ -9,10 +9,15 @@ class CourseSupabaseService implements CourseDataSource {
 
   @override
   Future<List<Course>> getCourses() async {
-    final response = await _client.from(_tableName).select();
-    final List<dynamic> data = response as List<dynamic>;
-    return data
-        .map((item) => Course.fromJson(item as Map<String, dynamic>))
+    final response = await _client
+        .from(_tableName)
+        .select()
+        .order('id', ascending: true);
+
+    return (response as List<dynamic>)
+        .map((item) => Course.fromJson(
+              Map<String, dynamic>.from(item as Map),
+            ))
         .toList();
   }
 
@@ -23,16 +28,25 @@ class CourseSupabaseService implements CourseDataSource {
         .insert(course.toJson())
         .select()
         .single();
-    return Course.fromJson(response);
+
+    return Course.fromJson(
+      Map<String, dynamic>.from(response),
+    );
   }
 
   @override
   Future<void> updateCourse(int id, Course course) async {
-    await _client.from(_tableName).update(course.toJson()).eq('id', id);
+    await _client
+        .from(_tableName)
+        .update(course.toJson())
+        .eq('id', id);
   }
 
   @override
   Future<void> deleteCourse(int id) async {
-    await _client.from(_tableName).delete().eq('id', id);
+    await _client
+        .from(_tableName)
+        .delete()
+        .eq('id', id);
   }
 }

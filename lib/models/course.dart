@@ -16,9 +16,9 @@ class Course {
   factory Course.fromJson(Map<String, dynamic> json) {
     return Course(
       id: json['id'] as int?,
-      code: json['code'] as String,
-      title: json['title'] as String,
-      credits: json['credits'] as int,
+      code: (json['code'] as String?) ?? '',
+      title: (json['title'] as String?) ?? '',
+      credits: (json['credits'] as num?)?.toInt() ?? 0,
       status: (json['status'] as String?) ?? 'planned',
     );
   }
