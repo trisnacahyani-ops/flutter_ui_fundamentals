@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../models/course.dart';
 import '../providers/course_provider.dart';
+import '../services/auth_service.dart';
 import '../widgets/course_card.dart';
 import '../widgets/error_view.dart';
 import 'add_course_page.dart';
@@ -10,6 +11,19 @@ import 'detail_page.dart';
 
 class MainPage extends StatelessWidget {
   const MainPage({super.key});
+
+  Future<void> _logout(BuildContext context) async {
+    try {
+      await AuthService.instance.logout();
+      // AuthGate otomatis mengarahkan kembali ke LoginPage.
+    } catch (e) {
+      if (!context.mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Logout gagal. Silakan coba kembali.')),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -34,6 +48,11 @@ class MainPage extends StatelessWidget {
             tooltip: 'Muat ulang',
             icon: const Icon(Icons.refresh),
             onPressed: provider.isLoading ? null : provider.loadCourses,
+          ),
+          IconButton(
+            tooltip: 'Logout',
+            icon: const Icon(Icons.logout),
+            onPressed: () => _logout(context),
           ),
         ],
       ),
