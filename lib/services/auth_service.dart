@@ -16,8 +16,16 @@ class AuthService {
   Future<AuthResponse> register({
     required String email,
     required String password,
+    String name = '',
+    String role = 'seeker',
   }) async {
-    return await _client.auth.signUp(email: email.trim(), password: password);
+    final selectedRole = role == 'owner' ? 'owner' : 'seeker';
+
+    return await _client.auth.signUp(
+      email: email.trim(),
+      password: password,
+      data: {'name': name.trim(), 'role': selectedRole},
+    );
   }
 
   Future<AuthResponse> login({

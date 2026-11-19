@@ -12,9 +12,12 @@ class RegisterPage extends StatefulWidget {
 class _RegisterPageState extends State<RegisterPage> {
   final _formKey = GlobalKey<FormState>();
 
+  final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
+
+  String _selectedRole = 'seeker';
 
   bool _isLoading = false;
   bool _obscurePassword = true;
@@ -33,12 +36,15 @@ class _RegisterPageState extends State<RegisterPage> {
 
     try {
       final response = await AuthService.instance.register(
+        name: _nameController.text.trim(),
         email: _emailController.text.trim(),
         password: _passwordController.text,
+        role: _selectedRole,
       );
 
       debugPrint('REGISTER USER: ${response.user?.id}');
       debugPrint('REGISTER SESSION: ${response.session != null}');
+      debugPrint('REGISTER ROLE: $_selectedRole');
 
       if (!mounted) return;
 
@@ -49,8 +55,6 @@ class _RegisterPageState extends State<RegisterPage> {
             backgroundColor: Color(0xFF36B37E),
           ),
         );
-
-        // AuthGate otomatis membuka HomePage.
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -86,6 +90,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
   @override
   void dispose() {
+    _nameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
@@ -240,6 +245,69 @@ class _RegisterPageState extends State<RegisterPage> {
                           const SizedBox(height: 30),
 
                           const Text(
+                            'Nama Lengkap',
+                            style: TextStyle(
+                              color: darkPurple,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 13,
+                            ),
+                          ),
+                          const SizedBox(height: 9),
+
+                          TextFormField(
+                            controller: _nameController,
+                            textCapitalization: TextCapitalization.words,
+                            decoration: _inputDecoration(
+                              label: 'Masukkan nama lengkap',
+                              icon: Icons.person_outline_rounded,
+                            ),
+                            validator: (value) {
+                              if (value == null || value.trim().isEmpty) {
+                                return 'Nama wajib diisi';
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 19),
+
+                          const Text(
+                            'Daftar Sebagai',
+                            style: TextStyle(
+                              color: darkPurple,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 13,
+                            ),
+                          ),
+                          const SizedBox(height: 9),
+
+                          DropdownButtonFormField<String>(
+                            initialValue: _selectedRole,
+                            decoration: _inputDecoration(
+                              label: 'Pilih role pengguna',
+                              icon: Icons.badge_outlined,
+                            ),
+                            borderRadius: BorderRadius.circular(16),
+                            items: const [
+                              DropdownMenuItem(
+                                value: 'seeker',
+                                child: Text('Mahasiswa (Seeker)'),
+                              ),
+                              DropdownMenuItem(
+                                value: 'owner',
+                                child: Text('Pengelola (Owner)'),
+                              ),
+                            ],
+                            onChanged: (value) {
+                              if (value != null) {
+                                setState(() {
+                                  _selectedRole = value;
+                                });
+                              }
+                            },
+                          ),
+                          const SizedBox(height: 19),
+
+                          const Text(
                             'Email',
                             style: TextStyle(
                               color: darkPurple,
@@ -261,7 +329,8 @@ class _RegisterPageState extends State<RegisterPage> {
                                 return 'Email wajib diisi';
                               }
 
-                              if (!value.contains('@')) {
+                              if (!RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$')
+                                  .hasMatch(value.trim())) {
                                 return 'Format email tidak valid';
                               }
 

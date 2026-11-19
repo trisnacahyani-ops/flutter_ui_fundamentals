@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../models/course.dart';
 import '../providers/course_provider.dart';
 import '../services/auth_service.dart';
+import '../services/profile_service.dart';
 import '../widgets/course_card.dart';
 import '../widgets/error_view.dart';
 import 'add_course_page.dart';
@@ -97,13 +98,15 @@ class MainPage extends StatelessWidget {
       ),
       body: RefreshIndicator(
         color: primaryPurple,
-        onRefresh: provider.loadCourses,
+        onRefresh: () async {
+          await Future.wait([provider.loadCourses(), ProfileCard.reload()]);
+        },
         child: ListView(
           padding: const EdgeInsets.fromLTRB(18, 20, 18, 30),
           children: [
             _buildWelcomeSection(),
             const SizedBox(height: 20),
-            _buildStudentCard(),
+            const ProfileCard(),
             const SizedBox(height: 22),
             _buildStatisticCard(provider.courses.length),
             const SizedBox(height: 26),
@@ -152,12 +155,12 @@ class MainPage extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Expanded(
+          const Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
+              children: [
                 Text(
-                  'Halo, Mahasiswa! 👋',
+                  'Halo! 👋',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 21,
@@ -178,65 +181,6 @@ class MainPage extends StatelessWidget {
           ),
           const SizedBox(width: 10),
           const Icon(Icons.school_rounded, color: Colors.white, size: 58),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStudentCard() {
-    return Container(
-      padding: const EdgeInsets.all(17),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFEAE3FF)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.deepPurple.withValues(alpha: 0.05),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 54,
-            height: 54,
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFFFFA6C9), Color(0xFFFFC5D9)],
-              ),
-              borderRadius: BorderRadius.circular(17),
-            ),
-            child: const Icon(
-              Icons.person_rounded,
-              color: Colors.white,
-              size: 31,
-            ),
-          ),
-          const SizedBox(width: 14),
-          const Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Ni Komang Trisna Cahyani',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                    color: Color(0xFF30264A),
-                  ),
-                ),
-                SizedBox(height: 5),
-                Text(
-                  'Mahasiswa Pendidikan Teknik Informatika',
-                  style: TextStyle(fontSize: 11, color: Color(0xFF89829A)),
-                ),
-              ],
-            ),
-          ),
-          const Icon(Icons.verified_rounded, color: Color(0xFF7B61D1)),
         ],
       ),
     );
@@ -377,6 +321,175 @@ class MainPage extends StatelessWidget {
           ),
         );
       }).toList(),
+    );
+  }
+}
+
+class ProfileCard extends StatefulWidget {
+  const ProfileCard({super.key});
+
+  static Future<void> Function()? _reloadCallback;
+
+  static Future<void> reload() async {
+    await _reloadCallback?.call();
+  }
+
+  @override
+  State<ProfileCard> createState() => _ProfileCardState();
+}
+
+class _ProfileCardState extends State<ProfileCard> {
+  late Future<UserProfile?> _profileFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProfile();
+    ProfileCard._reloadCallback = _refreshProfile;
+  }
+
+  void _loadProfile() {
+    _profileFuture = ProfileService().getMyProfile();
+  }
+
+  Future<void> _refreshProfile() async {
+    setState(_loadProfile);
+    await _profileFuture;
+  }
+
+  @override
+  void dispose() {
+    ProfileCard._reloadCallback = null;
+    super.dispose();
+  }
+
+  String _roleLabel(String role) {
+    switch (role) {
+      case 'owner':
+        return 'Pengelola';
+      case 'admin':
+        return 'Admin';
+      default:
+        return 'Mahasiswa';
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<UserProfile?>(
+      future: _profileFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Container(
+            padding: const EdgeInsets.all(22),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: const Center(
+              child: CircularProgressIndicator(color: MainPage.primaryPurple),
+            ),
+          );
+        }
+
+        final profile = snapshot.data;
+
+        if (snapshot.hasError || profile == null) {
+          return Container(
+            padding: const EdgeInsets.all(17),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: const Color(0xFFEAE3FF)),
+            ),
+            child: const Text(
+              'Data profil belum tersedia. Pastikan akun memiliki data pada tabel profiles.',
+              style: TextStyle(color: Color(0xFF89829A), fontSize: 12),
+            ),
+          );
+        }
+
+        return Container(
+          padding: const EdgeInsets.all(17),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: const Color(0xFFEAE3FF)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.deepPurple.withValues(alpha: 0.05),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 54,
+                height: 54,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFFFFA6C9), Color(0xFFFFC5D9)],
+                  ),
+                  borderRadius: BorderRadius.circular(17),
+                ),
+                child: const Icon(
+                  Icons.person_rounded,
+                  color: Colors.white,
+                  size: 31,
+                ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      profile.name.isEmpty
+                          ? 'Pengguna Course Explorer'
+                          : profile.name,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                        color: Color(0xFF30264A),
+                      ),
+                    ),
+                    const SizedBox(height: 5),
+                    Text(
+                      profile.email,
+                      style: const TextStyle(
+                        fontSize: 11,
+                        color: Color(0xFF89829A),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 5,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF2EDFF),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        'Role: ${_roleLabel(profile.role)}',
+                        style: const TextStyle(
+                          color: MainPage.primaryPurple,
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(Icons.verified_rounded, color: Color(0xFF7B61D1)),
+            ],
+          ),
+        );
+      },
     );
   }
 }
