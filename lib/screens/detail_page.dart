@@ -3,16 +3,39 @@ import 'package:provider/provider.dart';
 
 import '../models/course.dart';
 import '../providers/course_provider.dart';
+import '../services/profile_service.dart';
 import 'course_form_page.dart';
 
-class DetailPage extends StatelessWidget {
+class DetailPage extends StatefulWidget {
   final Course course;
 
   const DetailPage({super.key, required this.course});
 
+  @override
+  State<DetailPage> createState() => _DetailPageState();
+}
+
+class _DetailPageState extends State<DetailPage> {
   static const Color purple = Color(0xFF7956D8);
   static const Color darkPurple = Color(0xFF493477);
   static const Color background = Color(0xFFF8F5FF);
+
+  final ProfileService _profileService = ProfileService();
+  late Future<UserProfile?> _profileFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProfile();
+  }
+
+  void _loadProfile() {
+    _profileFuture = _profileService.getMyProfile();
+  }
+
+  bool _canManageCourse(UserProfile profile) {
+    return profile.isOwner || profile.isAdmin;
+  }
 
   Future<void> _confirmDelete(
     BuildContext context,
@@ -127,11 +150,68 @@ class DetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    return FutureBuilder<UserProfile?>(
+      future: _profileFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Scaffold(
+            backgroundColor: background,
+            body: Center(child: CircularProgressIndicator(color: purple)),
+          );
+        }
+
+        if (snapshot.hasError || snapshot.data == null) {
+          return Scaffold(
+            backgroundColor: background,
+            appBar: AppBar(
+              backgroundColor: background,
+              title: const Text('Detail Course'),
+            ),
+            body: Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(
+                      Icons.error_outline_rounded,
+                      size: 48,
+                      color: Colors.redAccent,
+                    ),
+                    const SizedBox(height: 12),
+                    const Text('Gagal memuat profil pengguna.'),
+                    const SizedBox(height: 12),
+                    FilledButton(
+                      onPressed: () {
+                        setState(_loadProfile);
+                      },
+                      child: const Text('Coba Lagi'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        }
+
+        final profile = snapshot.data!;
+        final canManage = _canManageCourse(profile);
+
+        return _buildDetailPage(context, profile, canManage);
+      },
+    );
+  }
+
+  Widget _buildDetailPage(
+    BuildContext context,
+    UserProfile profile,
+    bool canManage,
+  ) {
     final provider = context.watch<CourseProvider>();
 
     final currentCourse = provider.courses.firstWhere(
-      (item) => item.id == course.id,
-      orElse: () => course,
+      (item) => item.id == widget.course.id,
+      orElse: () => widget.course,
     );
 
     final isFavorite = provider.isFavorite(currentCourse.code);
@@ -149,18 +229,19 @@ class DetailPage extends StatelessWidget {
         foregroundColor: darkPurple,
         elevation: 0,
         actions: [
-          IconButton(
-            tooltip: 'Edit Course',
-            icon: const Icon(Icons.edit_rounded, color: purple),
-            onPressed: () => _editCourse(context, currentCourse),
-          ),
+          if (canManage)
+            IconButton(
+              tooltip: 'Edit Course',
+              icon: const Icon(Icons.edit_rounded, color: purple),
+              onPressed: () => _editCourse(context, currentCourse),
+            ),
           const SizedBox(width: 8),
         ],
       ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(18, 12, 18, 30),
         children: [
-          _buildStudentCard(),
+          _buildStudentCard(profile),
           const SizedBox(height: 22),
 
           _buildCourseHeader(currentCourse),
@@ -214,14 +295,16 @@ class DetailPage extends StatelessWidget {
           ),
           const SizedBox(height: 14),
 
-          _buildActionButton(
-            icon: Icons.edit_rounded,
-            label: 'Edit Course',
-            description: 'Ubah informasi course',
-            color: purple,
-            onPressed: () => _editCourse(context, currentCourse),
-          ),
-          const SizedBox(height: 12),
+          if (canManage) ...[
+            _buildActionButton(
+              icon: Icons.edit_rounded,
+              label: 'Edit Course',
+              description: 'Ubah informasi course',
+              color: purple,
+              onPressed: () => _editCourse(context, currentCourse),
+            ),
+            const SizedBox(height: 12),
+          ],
 
           _buildActionButton(
             icon: isFavorite
@@ -234,23 +317,31 @@ class DetailPage extends StatelessWidget {
               context.read<CourseProvider>().toggleFavorite(currentCourse.code);
             },
           ),
-          const SizedBox(height: 12),
 
-          _buildActionButton(
-            icon: Icons.delete_outline_rounded,
-            label: 'Hapus Course',
-            description: 'Hapus course dari daftar',
-            color: const Color(0xFFE65C65),
-            onPressed: provider.isSaving
-                ? null
-                : () => _confirmDelete(context, currentCourse),
-          ),
+          if (canManage) ...[
+            const SizedBox(height: 12),
+            _buildActionButton(
+              icon: Icons.delete_outline_rounded,
+              label: 'Hapus Course',
+              description: 'Hapus course dari daftar',
+              color: const Color(0xFFE65C65),
+              onPressed: provider.isSaving
+                  ? null
+                  : () => _confirmDelete(context, currentCourse),
+            ),
+          ],
         ],
       ),
     );
   }
 
-  Widget _buildStudentCard() {
+  Widget _buildStudentCard(UserProfile profile) {
+    final roleLabel = profile.isAdmin
+        ? 'Admin'
+        : profile.isOwner
+        ? 'Pengelola'
+        : 'Mahasiswa';
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -258,9 +349,9 @@ class DetailPage extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: const Color(0xFFEAE3FF)),
       ),
-      child: const Row(
+      child: Row(
         children: [
-          CircleAvatar(
+          const CircleAvatar(
             radius: 24,
             backgroundColor: Color(0xFFFFE5F0),
             child: Icon(
@@ -269,28 +360,31 @@ class DetailPage extends StatelessWidget {
               size: 28,
             ),
           ),
-          SizedBox(width: 13),
+          const SizedBox(width: 13),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Ni Komang Trisna Cahyani',
-                  style: TextStyle(
+                  profile.name.isEmpty ? profile.email : profile.name,
+                  style: const TextStyle(
                     color: darkPurple,
                     fontWeight: FontWeight.bold,
                     fontSize: 13,
                   ),
                 ),
-                SizedBox(height: 5),
+                const SizedBox(height: 5),
                 Text(
-                  'Pendidikan Teknik Informatika',
-                  style: TextStyle(color: Color(0xFF9289A5), fontSize: 11),
+                  roleLabel,
+                  style: const TextStyle(
+                    color: Color(0xFF9289A5),
+                    fontSize: 11,
+                  ),
                 ),
               ],
             ),
           ),
-          Icon(Icons.verified_rounded, color: purple),
+          const Icon(Icons.verified_rounded, color: purple),
         ],
       ),
     );

@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../models/course.dart';
 import '../providers/course_provider.dart';
+import '../services/profile_service.dart';
 
 class AddCoursePage extends StatefulWidget {
   const AddCoursePage({super.key});
@@ -18,11 +19,25 @@ class _AddCoursePageState extends State<AddCoursePage> {
   final _titleController = TextEditingController();
   final _creditsController = TextEditingController();
 
+  final ProfileService _profileService = ProfileService();
+
+  late Future<UserProfile?> _profileFuture;
+
   String _status = 'planned';
   bool _isSubmitting = false;
 
   static const Color primaryPurple = Color(0xFF7956D8);
   static const Color backgroundColor = Color(0xFFF8F7FF);
+
+  @override
+  void initState() {
+    super.initState();
+    _profileFuture = _profileService.getMyProfile();
+  }
+
+  bool _canManageCourse(UserProfile? profile) {
+    return profile != null && (profile.isOwner || profile.isAdmin);
+  }
 
   @override
   void dispose() {
@@ -34,6 +49,20 @@ class _AddCoursePageState extends State<AddCoursePage> {
 
   Future<void> _saveCourse() async {
     if (_isSubmitting) return;
+
+    // Periksa kembali role sebelum menyimpan.
+    final profile = await _profileService.getMyProfile();
+
+    if (!mounted) return;
+
+    if (!_canManageCourse(profile)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Kamu tidak memiliki akses untuk menambahkan course.'),
+        ),
+      );
+      return;
+    }
 
     if (!_formKey.currentState!.validate()) return;
 
@@ -220,6 +249,140 @@ class _AddCoursePageState extends State<AddCoursePage> {
 
   @override
   Widget build(BuildContext context) {
+    return FutureBuilder<UserProfile?>(
+      future: _profileFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Scaffold(
+            backgroundColor: backgroundColor,
+            body: Center(
+              child: CircularProgressIndicator(color: primaryPurple),
+            ),
+          );
+        }
+
+        if (snapshot.hasError || snapshot.data == null) {
+          return Scaffold(
+            backgroundColor: backgroundColor,
+            appBar: AppBar(
+              backgroundColor: backgroundColor,
+              title: const Text('Tambah Course'),
+            ),
+            body: Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(
+                      Icons.error_outline_rounded,
+                      size: 48,
+                      color: Colors.redAccent,
+                    ),
+                    const SizedBox(height: 12),
+                    const Text(
+                      'Gagal memuat profil pengguna.',
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+                          _profileFuture = _profileService.getMyProfile();
+                        });
+                      },
+                      child: const Text('Coba Lagi'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        }
+
+        if (!_canManageCourse(snapshot.data)) {
+          return Scaffold(
+            backgroundColor: backgroundColor,
+            appBar: AppBar(
+              title: const Text(
+                'Akses Ditolak',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF30264A),
+                ),
+              ),
+              backgroundColor: backgroundColor,
+              foregroundColor: primaryPurple,
+              elevation: 0,
+            ),
+            body: Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 100,
+                      height: 100,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFE9E0FF),
+                        borderRadius: BorderRadius.circular(28),
+                      ),
+                      child: const Icon(
+                        Icons.lock_outline_rounded,
+                        color: primaryPurple,
+                        size: 55,
+                      ),
+                    ),
+                    const SizedBox(height: 22),
+                    const Text(
+                      'Akses Ditolak',
+                      style: TextStyle(
+                        fontSize: 23,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF30264A),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    const Text(
+                      'Maaf, hanya Pengelola dan Admin yang '
+                      'dapat menambahkan course.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.black54,
+                        fontSize: 14,
+                        height: 1.5,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    SizedBox(
+                      width: 180,
+                      height: 48,
+                      child: ElevatedButton(
+                        onPressed: () => Navigator.pop(context),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: primaryPurple,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                        ),
+                        child: const Text('Kembali'),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        }
+
+        return _buildAddCourseForm(context);
+      },
+    );
+  }
+
+  Widget _buildAddCourseForm(BuildContext context) {
     final provider = context.watch<CourseProvider>();
     final isSaving = _isSubmitting || provider.isSaving;
 

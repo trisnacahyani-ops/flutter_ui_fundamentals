@@ -7,15 +7,38 @@ import '../services/auth_service.dart';
 import '../services/profile_service.dart';
 import '../widgets/course_card.dart';
 import '../widgets/error_view.dart';
+import '../widgets/role_guard.dart';
 import 'add_course_page.dart';
 import 'detail_page.dart';
 
-class MainPage extends StatelessWidget {
+class MainPage extends StatefulWidget {
   const MainPage({super.key});
 
   static const Color primaryPurple = Color(0xFF7956D8);
   static const Color lightPurple = Color(0xFFF2EDFF);
   static const Color backgroundColor = Color(0xFFF8F7FF);
+
+  @override
+  State<MainPage> createState() => _MainPageState();
+}
+
+class _MainPageState extends State<MainPage> {
+  late Future<UserProfile?> _profileFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProfile();
+  }
+
+  void _loadProfile() {
+    _profileFuture = ProfileService().getMyProfile();
+  }
+
+  Future<void> _refreshData(CourseProvider provider) async {
+    setState(_loadProfile);
+    await Future.wait([provider.loadCourses(), _profileFuture]);
+  }
 
   Future<void> _logout(BuildContext context) async {
     final confirm = await showDialog<bool>(
@@ -33,7 +56,9 @@ class MainPage extends StatelessWidget {
               child: const Text('Batal'),
             ),
             FilledButton(
-              style: FilledButton.styleFrom(backgroundColor: primaryPurple),
+              style: FilledButton.styleFrom(
+                backgroundColor: MainPage.primaryPurple,
+              ),
               onPressed: () => Navigator.pop(dialogContext, true),
               child: const Text('Logout'),
             ),
@@ -58,84 +83,154 @@ class MainPage extends StatelessWidget {
     }
   }
 
+  void _openAddCourse(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const AddCoursePage()),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<CourseProvider>();
 
-    return Scaffold(
-      backgroundColor: backgroundColor,
-      appBar: AppBar(
-        elevation: 0,
-        foregroundColor: Colors.white,
-        backgroundColor: primaryPurple,
-        title: const Text(
-          'Course Explorer',
-          style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 0.3),
-        ),
-        actions: [
-          IconButton(
-            tooltip: 'Muat ulang',
-            icon: const Icon(Icons.refresh_rounded),
-            onPressed: provider.isLoading ? null : provider.loadCourses,
-          ),
-          IconButton(
-            tooltip: 'Tambah course',
-            icon: const Icon(Icons.add_circle_outline_rounded),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const AddCoursePage()),
-              );
-            },
-          ),
-          IconButton(
-            tooltip: 'Logout',
-            icon: const Icon(Icons.logout_rounded),
-            onPressed: () => _logout(context),
-          ),
-          const SizedBox(width: 8),
-        ],
-      ),
-      body: RefreshIndicator(
-        color: primaryPurple,
-        onRefresh: () async {
-          await Future.wait([provider.loadCourses(), ProfileCard.reload()]);
-        },
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(18, 20, 18, 30),
-          children: [
-            _buildWelcomeSection(),
-            const SizedBox(height: 20),
-            const ProfileCard(),
-            const SizedBox(height: 22),
-            _buildStatisticCard(provider.courses.length),
-            const SizedBox(height: 26),
-            _buildSectionTitle(),
-            const SizedBox(height: 14),
-            _buildCourseContent(context, provider),
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        backgroundColor: primaryPurple,
-        foregroundColor: Colors.white,
-        elevation: 4,
-        icon: const Icon(Icons.add_rounded),
-        label: const Text(
-          'Tambah Course',
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => const AddCoursePage()),
+    return FutureBuilder<UserProfile?>(
+      future: _profileFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Scaffold(
+            backgroundColor: MainPage.backgroundColor,
+            body: Center(
+              child: CircularProgressIndicator(color: MainPage.primaryPurple),
+            ),
           );
-        },
-      ),
+        }
+
+        if (snapshot.hasError || snapshot.data == null) {
+          return Scaffold(
+            backgroundColor: MainPage.backgroundColor,
+            body: Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(
+                      Icons.person_off_rounded,
+                      size: 55,
+                      color: Colors.redAccent,
+                    ),
+                    const SizedBox(height: 12),
+                    const Text(
+                      'Gagal memuat profil pengguna.',
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 15),
+                    FilledButton(
+                      onPressed: () {
+                        setState(_loadProfile);
+                      },
+                      child: const Text('Coba Lagi'),
+                    ),
+                    TextButton(
+                      onPressed: () => _logout(context),
+                      child: const Text('Logout'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        }
+
+        final profile = snapshot.data!;
+
+        return Scaffold(
+          backgroundColor: MainPage.backgroundColor,
+          appBar: AppBar(
+            elevation: 0,
+            foregroundColor: Colors.white,
+            backgroundColor: MainPage.primaryPurple,
+            title: Text(
+              'Course Explorer (${profile.role})',
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                letterSpacing: 0.3,
+              ),
+            ),
+            actions: [
+              IconButton(
+                tooltip: 'Muat ulang',
+                icon: const Icon(Icons.refresh_rounded),
+                onPressed: provider.isLoading
+                    ? null
+                    : () => _refreshData(provider),
+              ),
+
+              RoleGuard(
+                role: profile.role,
+                allowed: const ['owner', 'admin'],
+                child: IconButton(
+                  tooltip: 'Tambah course',
+                  icon: const Icon(Icons.add_circle_outline_rounded),
+                  onPressed: () => _openAddCourse(context),
+                ),
+              ),
+
+              IconButton(
+                tooltip: 'Logout',
+                icon: const Icon(Icons.logout_rounded),
+                onPressed: () => _logout(context),
+              ),
+              const SizedBox(width: 8),
+            ],
+          ),
+          body: RefreshIndicator(
+            color: MainPage.primaryPurple,
+            onRefresh: () => _refreshData(provider),
+            child: ListView(
+              padding: const EdgeInsets.fromLTRB(18, 20, 18, 30),
+              children: [
+                _buildWelcomeSection(profile),
+                const SizedBox(height: 20),
+                _buildProfileCard(profile),
+                const SizedBox(height: 22),
+                _buildStatisticCard(provider.courses.length),
+                const SizedBox(height: 26),
+                _buildSectionTitle(),
+                const SizedBox(height: 14),
+                _buildCourseContent(context, provider),
+
+                if (profile.isAdmin) ...[
+                  const SizedBox(height: 26),
+                  _buildAdminSection(),
+                ],
+              ],
+            ),
+          ),
+          floatingActionButton: RoleGuard(
+            role: profile.role,
+            allowed: const ['owner', 'admin'],
+            child: FloatingActionButton.extended(
+              backgroundColor: MainPage.primaryPurple,
+              foregroundColor: Colors.white,
+              elevation: 4,
+              icon: const Icon(Icons.add_rounded),
+              label: const Text(
+                'Tambah Course',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              onPressed: () => _openAddCourse(context),
+            ),
+          ),
+        );
+      },
     );
   }
 
-  Widget _buildWelcomeSection() {
+  Widget _buildWelcomeSection(UserProfile profile) {
+    final roleLabel = _roleLabel(profile.role);
+
     return Container(
       padding: const EdgeInsets.all(22),
       decoration: BoxDecoration(
@@ -147,7 +242,7 @@ class MainPage extends StatelessWidget {
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: primaryPurple.withValues(alpha: 0.22),
+            color: MainPage.primaryPurple.withValues(alpha: 0.22),
             blurRadius: 18,
             offset: const Offset(0, 8),
           ),
@@ -155,20 +250,20 @@ class MainPage extends StatelessWidget {
       ),
       child: Row(
         children: [
-          const Expanded(
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Halo! 👋',
-                  style: TextStyle(
+                  'Halo, $roleLabel! 👋',
+                  style: const TextStyle(
                     color: Colors.white,
                     fontSize: 21,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                SizedBox(height: 8),
-                Text(
+                const SizedBox(height: 8),
+                const Text(
                   'Jelajahi dan kelola daftar course-mu dengan mudah.',
                   style: TextStyle(
                     color: Colors.white,
@@ -184,6 +279,100 @@ class MainPage extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Widget _buildProfileCard(UserProfile profile) {
+    return Container(
+      padding: const EdgeInsets.all(17),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFEAE3FF)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.deepPurple.withValues(alpha: 0.05),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 54,
+            height: 54,
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFFFFA6C9), Color(0xFFFFC5D9)],
+              ),
+              borderRadius: BorderRadius.circular(17),
+            ),
+            child: const Icon(
+              Icons.person_rounded,
+              color: Colors.white,
+              size: 31,
+            ),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  profile.name.isEmpty
+                      ? 'Pengguna Course Explorer'
+                      : profile.name,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                    color: Color(0xFF30264A),
+                  ),
+                ),
+                const SizedBox(height: 5),
+                Text(
+                  profile.email,
+                  style: const TextStyle(
+                    fontSize: 11,
+                    color: Color(0xFF89829A),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 5,
+                  ),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF2EDFF),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    'Role: ${_roleLabel(profile.role)}',
+                    style: const TextStyle(
+                      color: MainPage.primaryPurple,
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const Icon(Icons.verified_rounded, color: Color(0xFF7B61D1)),
+        ],
+      ),
+    );
+  }
+
+  String _roleLabel(String role) {
+    switch (role) {
+      case 'owner':
+        return 'Pengelola';
+      case 'admin':
+        return 'Admin';
+      default:
+        return 'Mahasiswa';
+    }
   }
 
   Widget _buildStatisticCard(int totalCourses) {
@@ -246,7 +435,7 @@ class MainPage extends StatelessWidget {
   Widget _buildSectionTitle() {
     return const Row(
       children: [
-        Icon(Icons.grid_view_rounded, color: primaryPurple, size: 23),
+        Icon(Icons.grid_view_rounded, color: MainPage.primaryPurple, size: 23),
         SizedBox(width: 9),
         Text(
           'Daftar Course',
@@ -260,11 +449,51 @@ class MainPage extends StatelessWidget {
     );
   }
 
+  Widget _buildAdminSection() {
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFEAE3FF)),
+      ),
+      child: const Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.admin_panel_settings_rounded,
+                color: MainPage.primaryPurple,
+              ),
+              SizedBox(width: 9),
+              Text(
+                'Administrasi',
+                style: TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF30264A),
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 10),
+          Text(
+            'Menu khusus administrator Course Explorer.',
+            style: TextStyle(color: Color(0xFF89829A), fontSize: 12),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildCourseContent(BuildContext context, CourseProvider provider) {
     if (provider.isLoading && provider.courses.isEmpty) {
       return const Padding(
         padding: EdgeInsets.all(35),
-        child: Center(child: CircularProgressIndicator(color: primaryPurple)),
+        child: Center(
+          child: CircularProgressIndicator(color: MainPage.primaryPurple),
+        ),
       );
     }
 
@@ -293,7 +522,7 @@ class MainPage extends StatelessWidget {
             ),
             SizedBox(height: 6),
             Text(
-              'Tambahkan course pertamamu untuk mulai mengelola data.',
+              'Tambahkan course untuk mulai mengelola data.',
               textAlign: TextAlign.center,
               style: TextStyle(color: Color(0xFF9991A8), fontSize: 12),
             ),
@@ -321,175 +550,6 @@ class MainPage extends StatelessWidget {
           ),
         );
       }).toList(),
-    );
-  }
-}
-
-class ProfileCard extends StatefulWidget {
-  const ProfileCard({super.key});
-
-  static Future<void> Function()? _reloadCallback;
-
-  static Future<void> reload() async {
-    await _reloadCallback?.call();
-  }
-
-  @override
-  State<ProfileCard> createState() => _ProfileCardState();
-}
-
-class _ProfileCardState extends State<ProfileCard> {
-  late Future<UserProfile?> _profileFuture;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadProfile();
-    ProfileCard._reloadCallback = _refreshProfile;
-  }
-
-  void _loadProfile() {
-    _profileFuture = ProfileService().getMyProfile();
-  }
-
-  Future<void> _refreshProfile() async {
-    setState(_loadProfile);
-    await _profileFuture;
-  }
-
-  @override
-  void dispose() {
-    ProfileCard._reloadCallback = null;
-    super.dispose();
-  }
-
-  String _roleLabel(String role) {
-    switch (role) {
-      case 'owner':
-        return 'Pengelola';
-      case 'admin':
-        return 'Admin';
-      default:
-        return 'Mahasiswa';
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return FutureBuilder<UserProfile?>(
-      future: _profileFuture,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return Container(
-            padding: const EdgeInsets.all(22),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: const Center(
-              child: CircularProgressIndicator(color: MainPage.primaryPurple),
-            ),
-          );
-        }
-
-        final profile = snapshot.data;
-
-        if (snapshot.hasError || profile == null) {
-          return Container(
-            padding: const EdgeInsets.all(17),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: const Color(0xFFEAE3FF)),
-            ),
-            child: const Text(
-              'Data profil belum tersedia. Pastikan akun memiliki data pada tabel profiles.',
-              style: TextStyle(color: Color(0xFF89829A), fontSize: 12),
-            ),
-          );
-        }
-
-        return Container(
-          padding: const EdgeInsets.all(17),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: const Color(0xFFEAE3FF)),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.deepPurple.withValues(alpha: 0.05),
-                blurRadius: 12,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 54,
-                height: 54,
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFFFFA6C9), Color(0xFFFFC5D9)],
-                  ),
-                  borderRadius: BorderRadius.circular(17),
-                ),
-                child: const Icon(
-                  Icons.person_rounded,
-                  color: Colors.white,
-                  size: 31,
-                ),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      profile.name.isEmpty
-                          ? 'Pengguna Course Explorer'
-                          : profile.name,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
-                        color: Color(0xFF30264A),
-                      ),
-                    ),
-                    const SizedBox(height: 5),
-                    Text(
-                      profile.email,
-                      style: const TextStyle(
-                        fontSize: 11,
-                        color: Color(0xFF89829A),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 5,
-                      ),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF2EDFF),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        'Role: ${_roleLabel(profile.role)}',
-                        style: const TextStyle(
-                          color: MainPage.primaryPurple,
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const Icon(Icons.verified_rounded, color: Color(0xFF7B61D1)),
-            ],
-          ),
-        );
-      },
     );
   }
 }
