@@ -14,27 +14,8 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    _initializeFCMToken();
-  }
 
-  Future<void> _initializeFCMToken() async {
-    final notificationService = NotificationService.instance;
-
-    try {
-      // 1. Mendapatkan FCM Token.
-      final token = await notificationService.getToken();
-
-      if (token != null) {
-        debugPrint('FCM Token berhasil diperoleh.');
-      }
-
-      // 2. Mendengarkan perubahan token.
-      notificationService.listenTokenRefresh((newToken) {
-        debugPrint('Token berhasil diperbarui.');
-      });
-    } catch (e) {
-      debugPrint('FCM Token error: $e');
-    }
+    NotificationService.instance.init();
   }
 
   @override
