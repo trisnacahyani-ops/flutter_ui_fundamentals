@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "575603337884",
+    "project_id": "course-explorer-v2-2d335",
+    "storage_bucket": "course-explorer-v2-2d335.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:575603337884:android:95429848e786ed2052db59",
+        "android_client_info": {
+          "package_name": "com.example.course_explorer_v2"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBdRoJi0i01pEhZF_w3GyEs3hA0sU2PMII"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
