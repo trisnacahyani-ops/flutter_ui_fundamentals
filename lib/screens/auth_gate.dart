@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../services/auth_service.dart';
 import 'home_page.dart';
@@ -9,28 +10,29 @@ class AuthGate extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder(
+    return StreamBuilder<AuthState>(
       stream: AuthService.instance.authStateChanges,
       builder: (context, snapshot) {
         if (snapshot.hasError) {
-          debugPrint('AUTH STREAM ERROR: ${snapshot.error}');
-
           return Scaffold(
             body: Center(
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: Text(
-                  'Gagal memeriksa autentikasi:\n${snapshot.error}',
-                  textAlign: TextAlign.center,
-                ),
+              child: Text(
+                'Gagal memeriksa autentikasi:\n${snapshot.error}',
+                textAlign: TextAlign.center,
               ),
             ),
           );
         }
 
-        final session = AuthService.instance.currentSession;
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
 
-        debugPrint('AUTH STREAM STATE: ${snapshot.connectionState}');
+        final session =
+            snapshot.data?.session ?? AuthService.instance.currentSession;
+
         debugPrint('AUTH EVENT: ${snapshot.data?.event}');
         debugPrint('SESSION EXISTS: ${session != null}');
 

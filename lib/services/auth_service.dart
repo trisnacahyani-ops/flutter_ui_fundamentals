@@ -11,15 +11,13 @@ class AuthService {
 
   Session? get currentSession => _client.auth.currentSession;
 
-  bool get isLoggedIn => currentSession != null;
-
   Stream<AuthState> get authStateChanges => _client.auth.onAuthStateChange;
 
   Future<AuthResponse> register({
     required String email,
     required String password,
   }) async {
-    return await _client.auth.signUp(email: email, password: password);
+    return await _client.auth.signUp(email: email.trim(), password: password);
   }
 
   Future<AuthResponse> login({
@@ -27,7 +25,7 @@ class AuthService {
     required String password,
   }) async {
     return await _client.auth.signInWithPassword(
-      email: email,
+      email: email.trim(),
       password: password,
     );
   }

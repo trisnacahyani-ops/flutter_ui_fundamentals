@@ -5,6 +5,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'providers/course_provider.dart';
 import 'repositories/course_repository.dart';
 import 'screens/auth_gate.dart';
+import 'screens/register_page.dart';
 import 'services/course_supabase_service.dart';
 
 const String supabaseUrl = 'https://svmrjenmzcujanzcaahv.supabase.co';
@@ -39,6 +40,7 @@ class MyApp extends StatelessWidget {
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.black),
           useMaterial3: true,
         ),
+        routes: {'/register': (context) => const RegisterPage()},
         home: const AuthGate(),
       ),
     );

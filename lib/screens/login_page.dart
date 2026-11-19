@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../services/auth_service.dart';
-import 'register_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -13,30 +11,19 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
+
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
 
-  bool _loading = false;
+  bool _isLoading = false;
   bool _obscurePassword = true;
-
-  @override
-  void dispose() {
-    _emailController.dispose();
-    _passwordController.dispose();
-    super.dispose();
-  }
-
-  void _showMessage(String message) {
-    if (!mounted) return;
-
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(message)));
-  }
 
   Future<void> _login() async {
     if (!_formKey.currentState!.validate()) return;
 
-    setState(() => _loading = true);
+    setState(() {
+      _isLoading = true;
+    });
 
     try {
       final response = await AuthService.instance.login(
@@ -44,30 +31,52 @@ class _LoginPageState extends State<LoginPage> {
         password: _passwordController.text,
       );
 
-      debugPrint('LOGIN BERHASIL');
-      debugPrint('RESPONSE SESSION: ${response.session != null}');
-      debugPrint(
-        'CURRENT SESSION: '
-        '${AuthService.instance.currentSession != null}',
-      );
+      debugPrint('LOGIN USER: ${response.user?.id}');
+      debugPrint('LOGIN SESSION: ${response.session != null}');
 
-      if (response.session == null) {
-        _showMessage('Login belum menghasilkan session.');
+      if (!mounted) return;
+
+      if (response.session != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Login berhasil!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+
+        // AuthGate otomatis membuka HomePage.
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Login belum berhasil. Session tidak ditemukan.'),
+          ),
+        );
       }
+    } catch (error) {
+      debugPrint('LOGIN AUTH ERROR: $error');
 
-      // AuthGate akan otomatis membuka HomePage
-      // ketika session berhasil dibuat.
-    } on AuthException catch (e) {
-      debugPrint('LOGIN AUTH ERROR: ${e.message}');
-      _showMessage(e.message);
-    } catch (e) {
-      debugPrint('LOGIN ERROR: $e');
-      _showMessage('Terjadi kesalahan: $e');
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Login gagal: $error'),
+          backgroundColor: Colors.red,
+        ),
+      );
     } finally {
       if (mounted) {
-        setState(() => _loading = false);
+        setState(() {
+          _isLoading = false;
+        });
       }
     }
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
   }
 
   @override
@@ -81,28 +90,24 @@ class _LoginPageState extends State<LoginPage> {
             child: Form(
               key: _formKey,
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.school, size: 72, color: Colors.indigo),
+                  const Icon(Icons.school, size: 75, color: Colors.blue),
                   const SizedBox(height: 16),
-                  Text(
+                  const Text(
                     'Course Explorer',
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.headlineMedium,
+                    style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 8),
-                  const Text(
-                    'Silakan login untuk melanjutkan',
-                    textAlign: TextAlign.center,
-                  ),
+                  const Text('Silakan login ke akun kamu'),
                   const SizedBox(height: 32),
+
                   TextFormField(
                     controller: _emailController,
                     keyboardType: TextInputType.emailAddress,
                     decoration: const InputDecoration(
                       labelText: 'Email',
-                      prefixIcon: Icon(Icons.email_outlined),
+                      prefixIcon: Icon(Icons.email),
                       border: OutlineInputBorder(),
                     ),
                     validator: (value) {
@@ -117,13 +122,15 @@ class _LoginPageState extends State<LoginPage> {
                       return null;
                     },
                   ),
+
                   const SizedBox(height: 16),
+
                   TextFormField(
                     controller: _passwordController,
                     obscureText: _obscurePassword,
                     decoration: InputDecoration(
                       labelText: 'Password',
-                      prefixIcon: const Icon(Icons.lock_outline),
+                      prefixIcon: const Icon(Icons.lock),
                       border: const OutlineInputBorder(),
                       suffixIcon: IconButton(
                         icon: Icon(
@@ -146,29 +153,26 @@ class _LoginPageState extends State<LoginPage> {
                       return null;
                     },
                   ),
+
                   const SizedBox(height: 24),
-                  FilledButton(
-                    onPressed: _loading ? null : _login,
-                    child: _loading
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : const Text('Login'),
+
+                  SizedBox(
+                    width: double.infinity,
+                    height: 48,
+                    child: ElevatedButton(
+                      onPressed: _isLoading ? null : _login,
+                      child: _isLoading
+                          ? const CircularProgressIndicator()
+                          : const Text('Login'),
+                    ),
                   ),
-                  const SizedBox(height: 12),
+
+                  const SizedBox(height: 16),
+
                   TextButton(
-                    onPressed: _loading
-                        ? null
-                        : () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const RegisterPage(),
-                              ),
-                            );
-                          },
+                    onPressed: () {
+                      Navigator.pushNamed(context, '/register');
+                    },
                     child: const Text('Belum punya akun? Register'),
                   ),
                 ],
