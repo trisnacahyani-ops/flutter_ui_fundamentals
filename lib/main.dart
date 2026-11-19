@@ -47,10 +47,10 @@ Future<void> main() async {
     publishableKey: supabasePublishableKey,
   );
 
-  // 4. Jalankan aplikasi terlebih dahulu.
+  // 4. Menjalankan aplikasi.
   runApp(const MyApp());
 
-  // 5. Konfigurasi FCM setelah aplikasi tampil.
+  // 5. Konfigurasi Firebase Cloud Messaging.
   unawaited(configureFirebaseMessaging());
 }
 
@@ -58,11 +58,6 @@ Future<void> main() async {
 Future<void> configureFirebaseMessaging() async {
   try {
     final messaging = FirebaseMessaging.instance;
-
-    // Meminta izin notifikasi.
-    final settings = await messaging.requestPermission();
-
-    debugPrint('Notification permission: ${settings.authorizationStatus}');
 
     // Mendengarkan notifikasi ketika aplikasi aktif.
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
@@ -89,22 +84,17 @@ Future<void> configureFirebaseMessaging() async {
       },
     );
 
-    // Registrasi FCM sesuai platform.
-    if (settings.authorizationStatus == AuthorizationStatus.authorized ||
-        settings.authorizationStatus == AuthorizationStatus.provisional) {
-      if (kIsWeb) {
-        await messaging.register(
-          vapidKey: vapidKey,
-          serviceWorkerScriptPath: 'firebase-messaging-sw.js',
-        );
-      } else {
-        await messaging.register();
-      }
-
-      debugPrint('FCM registration requested successfully.');
+    // Registrasi FCM berdasarkan platform.
+    if (kIsWeb) {
+      await messaging.register(
+        vapidKey: vapidKey,
+        serviceWorkerScriptPath: 'firebase-messaging-sw.js',
+      );
     } else {
-      debugPrint('Notification permission not granted.');
+      await messaging.register();
     }
+
+    debugPrint('FCM registration requested successfully.');
   } catch (e, stackTrace) {
     debugPrint('FCM initialization failed: $e');
 
